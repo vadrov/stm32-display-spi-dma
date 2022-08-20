@@ -11,7 +11,7 @@
  В качестве примера, представлено подключение дисплея с контроллером ST7789 к микроконтроллеру STM32F401CCU6 по SPI с DMA,
  в том числе демонстрируется преимущество использования DMA.
  
- https://youtu.be/8tIJ16riJqo
+ [![Demo CountPages alpha](https://share.gifyoutube.com/KzB6Gb.gif)](https://www.youtube.com/watch?v=8tIJ16riJqo)
 
  Автор: VadRov
  https://www.youtube.com/c/VadRov
