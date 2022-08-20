@@ -701,6 +701,6 @@ static const uint16_t Font15x25[] ={
 
 
 
-FontDef Font_8x13 =  {8,  13, Font8x13,  32, 255}; //+кириллица
-FontDef Font_12x20 = {12, 20, Font12x20, 32, 255}; //+кириллица
-FontDef Font_15x25 = {15, 25, Font15x25, 32, 255}; //+кириллица
+FontDef Font_8x13 =  {8,  13, (uint8_t*)Font8x13,  32, 255}; //+кириллица
+FontDef Font_12x20 = {12, 20, (uint8_t*)Font12x20, 32, 255}; //+кириллица
+FontDef Font_15x25 = {15, 25, (uint8_t*)Font15x25, 32, 255}; //+кириллица
