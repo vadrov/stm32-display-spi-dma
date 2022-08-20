@@ -9,16 +9,16 @@ CDefines=USE_FULL_LL_DRIVER;HSE_VALUE:25000000;HSE_STARTUP_TIMEOUT:100;LSE_START
 [PreviousGenFiles]
 AdvancedFolderStructure=true
 HeaderFileListSize=3
-HeaderFiles#0=C:/Users/SamaraPRO/STM32Cube/Repository/stm32f401ccu6_spi_display_st7789/Core/Inc/stm32f4xx_it.h
-HeaderFiles#1=C:/Users/SamaraPRO/STM32Cube/Repository/stm32f401ccu6_spi_display_st7789/Core/Inc/stm32_assert.h
-HeaderFiles#2=C:/Users/SamaraPRO/STM32Cube/Repository/stm32f401ccu6_spi_display_st7789/Core/Inc/main.h
+HeaderFiles#0=C:/Users/SamaraPRO/STM32Cube/Repository/stm32-display-spi-dma/Core/Inc/stm32f4xx_it.h
+HeaderFiles#1=C:/Users/SamaraPRO/STM32Cube/Repository/stm32-display-spi-dma/Core/Inc/stm32_assert.h
+HeaderFiles#2=C:/Users/SamaraPRO/STM32Cube/Repository/stm32-display-spi-dma/Core/Inc/main.h
 HeaderFolderListSize=1
-HeaderPath#0=C:/Users/SamaraPRO/STM32Cube/Repository/stm32f401ccu6_spi_display_st7789/Core/Inc
+HeaderPath#0=C:/Users/SamaraPRO/STM32Cube/Repository/stm32-display-spi-dma/Core/Inc
 HeaderFiles=;
 SourceFileListSize=2
-SourceFiles#0=C:/Users/SamaraPRO/STM32Cube/Repository/stm32f401ccu6_spi_display_st7789/Core/Src/stm32f4xx_it.c
-SourceFiles#1=C:/Users/SamaraPRO/STM32Cube/Repository/stm32f401ccu6_spi_display_st7789/Core/Src/main.c
+SourceFiles#0=C:/Users/SamaraPRO/STM32Cube/Repository/stm32-display-spi-dma/Core/Src/stm32f4xx_it.c
+SourceFiles#1=C:/Users/SamaraPRO/STM32Cube/Repository/stm32-display-spi-dma/Core/Src/main.c
 SourceFolderListSize=1
-SourcePath#0=C:/Users/SamaraPRO/STM32Cube/Repository/stm32f401ccu6_spi_display_st7789/Core/Src
+SourcePath#0=C:/Users/SamaraPRO/STM32Cube/Repository/stm32-display-spi-dma/Core/Src
 SourceFiles=;
 
