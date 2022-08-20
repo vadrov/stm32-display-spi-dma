@@ -777,7 +777,7 @@ void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *f
 {
 	int i, j, k, n;
 	uint32_t tmp;
-	const void *b = font->data;
+	const uint8_t *b = font->data;
 	uint16_t *data = (uint16_t*)malloc(2*font->height*font->width);
 	uint16_t *d = data;
 	uint16_t txcolor16 = LCD_Color_24b_to_16b(lcd, txcolor);
