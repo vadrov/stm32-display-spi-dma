@@ -1,10 +1,14 @@
 /*
- *  ili9341.h
  *	Драйвер управления дисплеями по SPI
- *  Created on: 19 сент. 2020 г.
  *  Author: VadRov
- *  Версия: 1.1 LL (на регистрах и частично LL)
- *  для STM32F4
+ *  Copyright (C) 2020, VadRov, all right reserved.
+ *
+ *  Допускается свободное распространение без целей коммерческого использования.
+ *  При коммерческом использовании необходимо согласование с автором.
+ *  Распространятся по типу "как есть", то есть использование осуществляете на свой страх и риск.
+ *  Автор не предоставляет никаких гарантий.
+ *
+ *  Версия: 1.3 LL (на регистрах и частично LL) для STM32F4
  *
  *  https://www.youtube.com/c/VadRov
  *  https://zen.yandex.ru/vadrov
@@ -114,7 +118,8 @@
 #define ILI9341_MADCTL_MH			0x04 //бит D2
 
 //режимы цвета
-#define ILI9341_COLOR_MODE_16bit	0x55
+#define ILI9341_COLOR_MODE_16bit	0x55 //RGB565 (16bit)
+#define ILI9341_COLOR_MODE_18bit	0x66 //RGB666 (18bit)
 
 uint8_t* ILI9341_Init(uint8_t orientation);
 uint8_t* ILI9341_SetWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
