@@ -1,10 +1,14 @@
 /*
- *  display.h
  *	Драйвер управления дисплеями по SPI
- *  Created on: 19 сент. 2020 г.
  *  Author: VadRov
- *  Версия: 1.1 LL (на регистрах и частично LL)
- *  для STM32F4
+ *  Copyright (C) 2020, VadRov, all right reserved.
+ *
+ *  Допускается свободное распространение без целей коммерческого использования.
+ *  При коммерческом использовании необходимо согласование с автором.
+ *  Распространятся по типу "как есть", то есть использование осуществляете на свой страх и риск.
+ *  Автор не предоставляет никаких гарантий.
+ *
+ *  Версия: 1.3 LL (на регистрах и частично LL) для STM32F4
  *
  *  https://www.youtube.com/c/VadRov
  *  https://zen.yandex.ru/vadrov
@@ -93,7 +97,7 @@ typedef struct {
 
 //подсветка
 typedef struct {
-	TIM_TypeDef *htim_bk;		//------- для подсветки с PWM - таймер
+	TIM_TypeDef *htim_bk;		//------- для подсветки с PWM:- таймер
 	uint32_t channel_htim_bk;	//----------------------------- канал таймера
 
 	GPIO_TypeDef *blk_port;		//просто для включения и выключения подсветки, если htim_bk = 0 (без PWM, определен порт вывода)
@@ -135,18 +139,31 @@ typedef struct {
 	uint8_t DMA_TX_Complete;							//флаг окончания передачи
 	uint32_t DMA_Counter;								//счетчик повторов DMA
 	uint16_t *tmp_buf;									//указатель на буфер дисплея
+	uint32_t addr_mem;									//адрес памяти - для перезапуска DMA
+	uint32_t size_mem;									//размер буфера - для перезапуска DMA
 	uint8_t display_number;								//номер дисплея
+	uint8_t cs_control;
+	uint8_t dc_control;
+	void *prev;					//указатель на предыдующий дисплей
+	void *next;					//указатель на следующий дисплей
 } LCD_Handler;
 
 
-extern uint8_t LCD_TOTAL_DISPLAYS;
-extern LCD_Handler **LCD_DISPLAY_HANDLERS;
+extern LCD_Handler *LCD;		//указатель на список дисплеев (первый дисплей в списке)
 
 //коллбэк (внести в обработчик прерывания потока DMA, выделенного для дисплея, см. файл stm32f4xx_it.c)
 extern void Display_TC_Callback(DMA_TypeDef*, uint32_t);
 
-//создание обработчика нового дисплея - возвращает указатель на обработчик дисплея
-LCD_Handler* LCD_Create(	uint16_t resolution1,
+void LCD_SetCS(LCD_Handler *lcd);
+void LCD_ResCS(LCD_Handler *lcd);
+void LCD_SetDC(LCD_Handler *lcd);
+void LCD_ResDC(LCD_Handler *lcd);
+
+//создает обработчик дисплея и добавляет его в список дисплеев
+//возвращает указатель на созданный дисплей либо 0 при неудаче
+LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,			/* указатель на первый дисплей в списке либо 0,
+														   если в списке еще нет дисплеев */
+							uint16_t resolution1,
 							uint16_t resolution2,
 							uint16_t width_controller,
 							uint16_t height_controller,
