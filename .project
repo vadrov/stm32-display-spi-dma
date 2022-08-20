@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>stm32f401ccu6_spi_display_st7789</name>
+	<name>stm32-display-spi-dma</name>
 	<comment></comment>
 	<projects>
 	</projects>
