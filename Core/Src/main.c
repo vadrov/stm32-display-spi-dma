@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "display.h"
 #include "st7789.h"
+#include "ili9341.h"
 #include <stdlib.h>
 /* USER CODE END Includes */
 
@@ -58,7 +59,6 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t millis = 0;
 /* USER CODE END 0 */
 
 /**
@@ -68,18 +68,18 @@ uint32_t millis = 0;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-/* включаем кэширование инструкций */
-#if (INSTRUCTION_CACHE_ENABLE != 0U)
-	((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (9U));
-#endif
-/* включаем кэширование данных */
-#if (DATA_CACHE_ENABLE != 0U)
-	((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (10U));
-#endif
-/* включаем систему предварительной выборки инструкций*/
-#if (PREFETCH_ENABLE != 0U)
-	((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (8U));
-#endif
+	/* включаем кэширование инструкций */
+	#if (INSTRUCTION_CACHE_ENABLE != 0U)
+		((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (9U));
+	#endif
+	/* включаем кэширование данных */
+	#if (DATA_CACHE_ENABLE != 0U)
+		((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (10U));
+	#endif
+	/* включаем систему предварительной выборки инструкций*/
+	#if (PREFETCH_ENABLE != 0U)
+		((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (8U));
+	#endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -128,21 +128,38 @@ int main(void)
 									 LCD_DC_GPIO_Port,
 									 LCD_DC_Pin,
 									 LCD_CS_GPIO_Port,
-									 LCD_CS_Pin         };
+								 	 LCD_CS_Pin         };
+/*  Для дисплея на контроллере ST7789   */
+  LCD = LCD_DisplayAdd( LCD,
+		  	  	  	  	240,
+		   				240,
+						ST7789_CONTROLLER_WIDTH,
+						ST7789_CONTROLLER_HEIGHT,
+						PAGE_ORIENTATION_PORTRAIT,
+						ST7789_Init,
+						ST7789_SetWindow,
+						ST7789_SleepIn,
+						ST7789_SleepOut,
+						&spi_con,
+						LCD_DATA_16BIT_BUS,
+						bkl_data );
 
-  LCD = LCD_Create( 	240,
-		   	240,
-			ST7789_CONTROLLER_WIDTH,
-			ST7789_CONTROLLER_HEIGHT,
-			PAGE_ORIENTATION_PORTRAIT,
-			ST7789_Init,
-			ST7789_SetWindow,
-			ST7789_SleepIn,
-			ST7789_SleepOut,
-			&spi_con,
-			LCD_DATA_16BIT_BUS,
-			bkl_data );
-	
+/*  Для дисплея на контроллере ILI9341   */
+/*
+  LCD = LCD_DisplayAdd( LCD,
+		  	  	  	  	320,
+		   				240,
+						ILI9341_CONTROLLER_WIDTH,
+						ILI9341_CONTROLLER_HEIGHT,
+						PAGE_ORIENTATION_PORTRAIT,
+						ILI9341_Init,
+						ILI9341_SetWindow,
+						ILI9341_SleepIn,
+						ILI9341_SleepOut,
+						&spi_con,
+						LCD_DATA_16BIT_BUS,
+						bkl_data );
+*/
   LCD_Handler *lcd = LCD; //указатель на первый дисплей в списке
   LCD_Init(lcd);
 
@@ -163,10 +180,13 @@ int main(void)
   	  while (millis - tick < 1000)
   	  {
   		  LCD_Fill(lcd, COLOR_RED);
-		  for (uint32_t i = 0; i<100000; i++)
+
+  		  /* задержка */
+  		  for (uint32_t i = 0; i<100000; i++)
 		  {
 			  __NOP();
 		  }
+
   		  frames++;
   	  }
   	  utoa(frames, buff, 10);
@@ -266,7 +286,7 @@ static void MX_SPI1_Init(void)
 
   LL_DMA_SetStreamPriorityLevel(DMA2, LL_DMA_STREAM_3, LL_DMA_PRIORITY_LOW);
 
-  LL_DMA_SetMode(DMA2, LL_DMA_STREAM_3, LL_DMA_MODE_CIRCULAR);
+  LL_DMA_SetMode(DMA2, LL_DMA_STREAM_3, LL_DMA_MODE_NORMAL);
 
   LL_DMA_SetPeriphIncMode(DMA2, LL_DMA_STREAM_3, LL_DMA_PERIPH_NOINCREMENT);
 
