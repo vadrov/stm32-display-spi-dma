@@ -1,10 +1,14 @@
 /*
- *  display_spi_LL.c
  *	Драйвер управления дисплеями по SPI
- *  Created on: 19 сент. 2020 г.
  *  Author: VadRov
- *  Версия: 1.1 LL (на регистрах и частично LL)
- *  для STM32F4
+ *  Copyright (C) 2020, VadRov, all right reserved.
+ *
+ *  Допускается свободное распространение без целей коммерческого использования.
+ *  При коммерческом использовании необходимо согласование с автором.
+ *  Распространятся по типу "как есть", то есть использование осуществляете на свой страх и риск.
+ *  Автор не предоставляет никаких гарантий.
+ *
+ *  Версия: 1.3 LL (на регистрах и частично LL) для STM32F4
  *
  *  https://www.youtube.com/c/VadRov
  *  https://zen.yandex.ru/vadrov
@@ -13,22 +17,24 @@
  *
  */
 
+#include "string.h"
+#include "stdlib.h"
 #include "display.h"
-#include <stdlib.h>
-#include <string.h>
 #include "fonts.h"
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
 #define MAX(x, y) (x > y ? x : y)
 #define MIN(x, y) (x < y ? x : y)
 
-#define LCD_CS_LOW		if (lcd->spi_data.cs_port) lcd->spi_data.cs_port->BSRR = (uint32_t)lcd->spi_data.cs_pin << 16U
-#define LCD_CS_HI		if (lcd->spi_data.cs_port) lcd->spi_data.cs_port->BSRR = lcd->spi_data.cs_pin
-#define LCD_DC_LOW		lcd->spi_data.dc_port->BSRR = (uint32_t)lcd->spi_data.dc_pin << 16U
-#define LCD_DC_HI		lcd->spi_data.dc_port->BSRR = lcd->spi_data.dc_pin
+#define LCD_CS_LOW		if (lcd->spi_data.cs_port) { lcd->spi_data.cs_port->BSRR = (uint32_t)lcd->spi_data.cs_pin << 16U; }
+#define LCD_CS_HI		if (lcd->spi_data.cs_port) { lcd->spi_data.cs_port->BSRR = lcd->spi_data.cs_pin; }
+#define LCD_DC_LOW		{lcd->spi_data.dc_port->BSRR = (uint32_t)lcd->spi_data.dc_pin << 16U; }
+#define LCD_DC_HI		{lcd->spi_data.dc_port->BSRR = lcd->spi_data.dc_pin; }
 
-uint8_t LCD_TOTAL_DISPLAYS = 0;
-LCD_Handler **LCD_DISPLAY_HANDLERS = 0;
+#define DISABLE_IRQ		__disable_irq(); __DSB(); __ISB();
+#define ENABLE_IRQ		__enable_irq();
+
+LCD_Handler *LCD = 0;
 
 //коллбэк по прерыванию потока передачи
 //этот обработчик необходимо прописать в функциях обработки прерываний в потоках DMA,
@@ -38,95 +44,102 @@ void Display_TC_Callback(DMA_TypeDef *dma_x, uint32_t stream)
 	//сбрасываем флаги прерываний
 	uint8_t shift[8] = {0, 6, 16, 22, 0, 6, 16, 22}; //битовое смещение во флаговом регистре IFCR (L и H)
 	volatile uint32_t *ifcr_tx = (stream > 3) ? &(dma_x->HIFCR) : &(dma_x->LIFCR);
-	*ifcr_tx = 0x3F<<shift[stream]; //флаги сбрасываем всегда, иначе сразу после выхода опять попадем в прерывание по этому же событию
-	LCD_Handler *lcd;
-	uint8_t i = LCD_TOTAL_DISPLAYS;
+	*ifcr_tx = 0x3F<<shift[stream];
 	uint32_t stream_ct = 0;
 	DMA_TypeDef *dma_ct = 0;
-	while (i) //ищем среди подключенных дисплеев тот, которому соответстсвует канал, вызвавший прерывание
+	LCD_Handler *lcd = LCD; //указатель на первый дисплей в списке
+	//проходим по списку дисплеев (пока есть следующий в списке)
+	while (lcd)
 	{
-		//указатель на i-тый дисплей
-		lcd = LCD_DISPLAY_HANDLERS[LCD_TOTAL_DISPLAYS - i];
-		//получаем параметры i-тогой дисплея в зависимости от типа подключения
+		//получаем параметры DMA потока дисплея
 		dma_ct = lcd->spi_data.dma_tx.dma;
 		stream_ct = lcd->spi_data.dma_tx.stream;
 		//проверка на соответствие текущего потока DMA потоку, к которому привязан i-тый дисплей
 		if (dma_ct == dma_x && stream_ct == stream)
 		{
-			if (lcd->spi_data.cs_port) //управление по cs поддерживается
+			if (lcd->spi_data.cs_port) //управление по cs поддерживается?
 			{
-				//то на выводе cs активного дисплея должен быть низкий уровень
+				//на выводе cs дисплея низкий уровень?
 				if (lcd->spi_data.cs_port->ODR & lcd->spi_data.cs_pin) //проверяем состояние пина выходного регистра порта
 				{
-					i--;											   //если высокий уровень cs, то не этот дисплей активен
-					continue;										   //и переходим к следующему
+					lcd = (LCD_Handler *)lcd->next;		   //если высокий уровень cs, то не этот дисплей активен
+					continue;							   //и переходим к следующему
 				}
 			}
-			//уменьшаем счетчик повторений (режим-то у нас кольцевой)
-			lcd->DMA_Counter--;
-			if (lcd->DMA_Counter) //если счетчик повторений не равен нулю, то выходим из прерывания
-			{
-				return;
-			}
-			//--- выключаем поток DMA, если счетчик повторений достиг нуля ---
 			//указатель на поток: aдрес контроллера + смещение
 			DMA_Stream_TypeDef *dma_TX = ((DMA_Stream_TypeDef *)((uint32_t)((uint32_t)dma_x + STREAM_OFFSET_TAB[stream])));
-			//запрещаем прерывания по всем событиям потока передачи
-			dma_TX->CR &= ~(DMA_SxCR_DMEIE | DMA_SxCR_HTIE | DMA_SxCR_TEIE | DMA_SxCR_TCIE);
-			dma_TX->FCR &= ~DMA_SxFCR_FEIE;
-			//выключаем поток
+			//выключаем поток DMA
 			dma_TX->CR &= ~DMA_SxCR_EN;
 			while (dma_TX->CR & DMA_SxCR_EN) {__NOP();} //ждем отключения потока
+			//уменьшаем счетчик повторений
+			lcd->DMA_Counter--;
+			if (lcd->DMA_Counter) //если счетчик повторений не равен нулю, то перезапускаем DMA и выходим из прерывания
+			{
+				dma_TX->M0AR = lcd->addr_mem;
+				dma_TX->NDTR = lcd->size_mem;
+				//включаем поток DMA
+				dma_TX->CR |= (DMA_SxCR_EN);
+				return;
+			}
 			//очищаем буфер дисплея
 			if (lcd->tmp_buf)
 			{
+		    	//так как память выделяется динамически, то на всякий случай,
+				//чтобы не было коллизий, запретим прерывания перед освобождением памяти
+				DISABLE_IRQ
 				free(lcd->tmp_buf);
-				lcd->tmp_buf = NULL;
+				lcd->tmp_buf = 0;
+				ENABLE_IRQ
 			}
 			//запрещаем SPI принимать запросы от DMA
 			lcd->spi_data.spi->CR2 &= ~SPI_CR2_TXDMAEN;
+			while (lcd->spi_data.spi->SR & SPI_SR_BSY) { __NOP(); } //ждем пока SPI освободится
 			//отключаем дисплей от MK (притягиваем вывод CS дисплея к высокому уровню)
-			LCD_CS_HI;
+			if (!lcd->cs_control) LCD_CS_HI;
+			//установим флаг выполнения запроса передачи по DMA
+			lcd->DMA_TX_Complete = 1;
+			//выключаем spi
+			lcd->spi_data.spi->CR1 &= ~SPI_CR1_SPE;
 			return;
 		}
-		i--;
+		//переходим к следующему дисплею в списке
+		lcd = (LCD_Handler *)lcd->next;
 	}
 }
 
-static void LCD_WRITE_CMD(LCD_Handler* lcd, uint8_t cmd)
+inline void LCD_SetCS(LCD_Handler *lcd)
 {
-	SPI_TypeDef *spi = lcd->spi_data.spi;
-	while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-	LCD_DC_LOW;
-	LCD_CS_LOW;
-	spi->CR1 &= ~SPI_CR1_SPE; // SPI выключаем, чтобы изменить параметры
-	spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
-				   SPI_CR1_RXONLY |   	//  Transmit only
-				   SPI_CR1_CRCEN | 		//выключаем аппаратный расчет CRC
-				   SPI_CR1_DFF); 		//8-битная передача
-	spi->CR1 |= SPI_CR1_SPE; // SPI включаем
-	spi->DR = cmd; //команда
-	while (!(spi->SR & SPI_SR_TXE)) { ; } //ждем окончания передачи
-	while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-	LCD_CS_HI;
+	LCD_CS_HI
 }
 
-static void LCD_WRITE_DATA(LCD_Handler* lcd, uint8_t data)
+inline void LCD_ResCS(LCD_Handler *lcd)
+{
+	LCD_CS_LOW
+}
+
+inline void LCD_SetDC(LCD_Handler *lcd)
+{
+	LCD_DC_HI
+}
+
+inline void LCD_ResDC(LCD_Handler *lcd)
+{
+	LCD_DC_LOW
+}
+
+typedef enum {
+	lcd_write_command = 0,
+	lcd_write_data
+} lcd_dc_select;
+
+inline static void LCD_WRITE_DC(LCD_Handler* lcd, uint8_t data, lcd_dc_select lcd_dc)
 {
 	SPI_TypeDef *spi = lcd->spi_data.spi;
-	while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-	LCD_DC_HI;
-	LCD_CS_LOW;
-	spi->CR1 &= ~SPI_CR1_SPE; // SPI выключаем, чтобы изменить параметры
-	spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
-				   SPI_CR1_RXONLY |   	//  Transmit only
-				   SPI_CR1_CRCEN | 		//выключаем аппаратный расчет CRC
-				   SPI_CR1_DFF); 		//8-битная передача
-	spi->CR1 |= SPI_CR1_SPE; // SPI включаем
+	if (lcd_dc == lcd_write_command) LCD_DC_LOW
+	else LCD_DC_HI
 	spi->DR = data; //команда
-	while (!(spi->SR & SPI_SR_TXE)) { ; } //ждем окончания передачи
-	while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-	LCD_CS_HI;
+	while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+	while (spi->SR & SPI_SR_BSY)    { __NOP(); } //ждем когда SPI освободится
 }
 
 void LCD_HardWareReset (LCD_Handler* lcd)
@@ -143,7 +156,16 @@ void LCD_HardWareReset (LCD_Handler* lcd)
 //интерпретатор строк с управлящими кодами: "команда", "данные", "пауза", "завершение пакета"
 void LCD_String_Interpretator(LCD_Handler* lcd, uint8_t *str)
 {
+	SPI_TypeDef *spi = lcd->spi_data.spi;
 	int i;
+	while ((spi->SR & SPI_SR_BSY) || !lcd->DMA_TX_Complete) { __NOP(); } //ждем когда SPI освободится
+	LCD_CS_LOW
+	spi->CR1 &= ~SPI_CR1_SPE; // SPI выключаем, чтобы изменить параметры
+	spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
+				   SPI_CR1_RXONLY |   	//  Transmit only
+				   SPI_CR1_CRCEN | 		//выключаем аппаратный расчет CRC
+				   SPI_CR1_DFF); 		//установим 8-битную передачу
+	spi->CR1 |= SPI_CR1_SPE; // SPI включаем
 	while (1)
 	{
 		switch (*str++)
@@ -151,14 +173,12 @@ void LCD_String_Interpretator(LCD_Handler* lcd, uint8_t *str)
 			//управляющий код "команда"
 			case LCD_UPR_COMMAND:
 				//отправляем код команды контроллеру дисплея
-				LCD_WRITE_CMD(lcd, *str++);
+				LCD_WRITE_DC(lcd, *str++, lcd_write_command);
 				//количество параметров команды
 				i = *str++;
 				//отправляем контроллеру дисплея параметры команды
-				while(i)
-				{
-					LCD_WRITE_DATA(lcd, *str++);
-					i--;
+				while(i--) {
+					LCD_WRITE_DC(lcd, *str++, lcd_write_data);
 				}
 				break;
 			//управляющий код "данные"
@@ -166,10 +186,8 @@ void LCD_String_Interpretator(LCD_Handler* lcd, uint8_t *str)
 				//количество данных
 				i = *str++;
 				//отправляем контроллеру дисплея данные
-				while(i)
-				{
-					LCD_WRITE_DATA(lcd, *str++);
-					i--;
+				while(i--) {
+					LCD_WRITE_DC(lcd, *str++, lcd_write_data);
 				}
 				break;
 			//управляющий код "пауза"
@@ -180,13 +198,19 @@ void LCD_String_Interpretator(LCD_Handler* lcd, uint8_t *str)
 			//управляющий код "завершение пакета"
 			case LCD_UPR_END:
 			default:
+				LCD_CS_HI
+				//выключаем spi
+				spi->CR1 &= ~SPI_CR1_SPE;
 				return;
 		}
 	}
 }
 
-//создание обработчика дисплея
-LCD_Handler* LCD_Create(	uint16_t resolution1,
+//создание обработчика дисплея и добавление его в список дисплеев lcds
+//возвращает указатель на созданный обработчик либо 0 при неудаче
+LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,     /* указатель на список дисплеев
+													  (первый дисплей в списке) */
+							uint16_t resolution1,
 							uint16_t resolution2,
 							uint16_t width_controller,
 							uint16_t height_controller,
@@ -201,21 +225,11 @@ LCD_Handler* LCD_Create(	uint16_t resolution1,
 					   )
 {
 	LCD_Handler* lcd = (LCD_Handler*)calloc(1, sizeof(LCD_Handler));
+	if (!lcd) return 0;
 	LCD_DMA_TypeDef *hdma = 0;
-	if (lcd==NULL) return NULL;
 	lcd->data_bus = data_bus;
 	//инициализация данных подключения
 	lcd->spi_data = *((LCD_SPI_Connected_data*)connection_data);
-	lcd->spi_data.spi->CR1 &= ~SPI_CR1_SPE;
-	if (data_bus == LCD_DATA_16BIT_BUS)
-	{
-		lcd->spi_data.spi->CR1 |= SPI_CR1_DFF;
-	}
-	else
-	{
-		lcd->spi_data.spi->CR1 &= ~SPI_CR1_DFF;
-	}
-	lcd->spi_data.spi->CR1 |= SPI_CR1_SPE;
 	hdma = &lcd->spi_data.dma_tx;
 	//настройка DMA
 	if (hdma->dma)
@@ -233,6 +247,13 @@ LCD_Handler* LCD_Create(	uint16_t resolution1,
 			dma_x->CR &= ~(DMA_SxCR_MSIZE | DMA_SxCR_PSIZE);
 			dma_x->CR |= LL_DMA_MDATAALIGN_HALFWORD | LL_DMA_PDATAALIGN_HALFWORD;
 		}
+		//запрещаем прерывания по некоторым событиям канала передачи tx и режим двойного буфера
+		dma_x->CR &= ~(DMA_SxCR_DMEIE | DMA_SxCR_HTIE | DMA_SxCR_DBM | DMA_SxCR_TEIE);
+		dma_x->FCR &= ~DMA_SxFCR_FEIE;
+		//разрешаем прерывание по окончанию передачи
+		dma_x->CR |= DMA_SxCR_TCIE;
+		dma_x->CR &= ~DMA_SxCR_PINC; //инкремент адреса периферии отключен
+		dma_x->CR |= DMA_SxCR_MINC;  //инкремент адреса памяти включен
 	}
 	lcd->DMA_TX_Complete = 1;
 	lcd->DMA_Counter = 0;
@@ -276,7 +297,7 @@ LCD_Handler* LCD_Create(	uint16_t resolution1,
 	else
 	{
 		LCD_Delete(lcd);
-		return NULL;
+		return 0;
 	}
 
 	if (lcd->Width_Controller < lcd->Width ||
@@ -285,22 +306,26 @@ LCD_Handler* LCD_Create(	uint16_t resolution1,
 		set_win==NULL )
 	{
 		LCD_Delete(lcd);
-		return NULL;
+		return 0;
 	}
-
 	lcd->Orientation = orientation;
 	lcd->Init_callback = init;
 	lcd->SetActiveWindow_callback = set_win;
 	lcd->SleepIn_callback = sleep_in;
 	lcd->SleepOut_callback = sleep_out;
-
 	lcd->bkl_data = bkl_data;
-
-	LCD_TOTAL_DISPLAYS++;
-	LCD_DISPLAY_HANDLERS = (LCD_Handler**)realloc(LCD_DISPLAY_HANDLERS, LCD_TOTAL_DISPLAYS * sizeof(LCD_Handler*));
-	LCD_DISPLAY_HANDLERS[LCD_TOTAL_DISPLAYS-1] = lcd;
-	lcd->display_number = LCD_TOTAL_DISPLAYS;
-
+	lcd->display_number = 0;
+	lcd->next = 0;
+	lcd->prev = 0;
+	if (!lcds) return lcd;
+	LCD_Handler *prev = lcds;
+	while (prev->next)
+	{
+		prev = (LCD_Handler *)prev->next;
+		lcd->display_number++;
+	}
+	lcd->prev = (void*)prev;
+	prev->next = (void*)lcd;
 	return lcd;
 }
 
@@ -312,6 +337,7 @@ void LCD_Delete(LCD_Handler* lcd)
 		if (lcd->tmp_buf)	free(lcd->tmp_buf);
 		memset(lcd, 0, sizeof(LCD_Handler));
 		free(lcd);
+		lcd  = 0;
 	}
 }
 
@@ -345,7 +371,7 @@ uint16_t LCD_GetHeight(LCD_Handler* lcd)
 //дисплей занят, если занято spi, к которому он подключен
 LCD_State LCD_GetState(LCD_Handler* lcd)
 {
-	if (lcd->spi_data.spi->SR & SPI_SR_BSY)	return LCD_STATE_BUSY;
+	if ((lcd->spi_data.spi->SR & SPI_SR_BSY) || !lcd->DMA_TX_Complete) return LCD_STATE_BUSY;
 	return LCD_STATE_READY;
 }
 
@@ -445,17 +471,13 @@ void LCD_SetActiveWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2
 	LCD_String_Interpretator(lcd, lcd->SetActiveWindow_callback(x1+lcd->x_offs, y1+lcd->y_offs, x2+lcd->x_offs, y2+lcd->y_offs));
 }
 
-//вывод потока данных на дисплей
+//вывод блока данных на дисплей
 void LCD_WriteData(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 {
-	if (lcd->data_bus == LCD_DATA_8BIT_BUS)
-	{
-		len *= 2;
-	}
 	SPI_TypeDef *spi = lcd->spi_data.spi;
-	while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-	LCD_DC_HI;
-	LCD_CS_LOW;
+	while ((spi->SR & SPI_SR_BSY) || !lcd->DMA_TX_Complete) { __NOP(); } //ждем когда SPI освободится
+	if (!lcd->cs_control) LCD_CS_LOW
+	if (!lcd->dc_control) LCD_DC_HI
 	spi->CR1 &= ~SPI_CR1_SPE; // SPI выключаем, чтобы изменить параметры
 	spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
 				   SPI_CR1_RXONLY |   	//  Transmit only
@@ -471,28 +493,30 @@ void LCD_WriteData(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 		while (len)
 		{
 			spi->DR = *data++; //записываем данные в регистр
-			while (!(spi->SR & SPI_SR_TXE)) { ; } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
 			len--;
 		}
 	}
 	else
 	{
+		len *= 2;
 		uint8_t *data1 = (uint8_t *)data;
 		while (len)
 		{
 			spi->DR = *data1++; //записываем данные в регистр
-			while (!(spi->SR & SPI_SR_TXE)) { ; } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
 			len--;
 		}
 	}
-	while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-	LCD_CS_HI;
+	while (spi->SR & SPI_SR_BSY) { __NOP(); } //ждем когда SPI освободится
+	if (!lcd->cs_control) LCD_CS_HI
+	//выключаем spi
+	spi->CR1 &= ~SPI_CR1_SPE;
 }
 
-//вывод потока данных на дисплей с DMA
+//вывод блока данных на дисплей с DMA
 void LCD_WriteDataDMA(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 {
-	lcd->DMA_TX_Complete = 0;
 	if (lcd->spi_data.dma_tx.dma)
 	{
 		if (lcd->data_bus == LCD_DATA_8BIT_BUS)
@@ -500,9 +524,14 @@ void LCD_WriteDataDMA(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 			len*=2;
 		}
 		SPI_TypeDef *spi = lcd->spi_data.spi;
-		while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-		LCD_DC_HI;
-		LCD_CS_LOW;
+		while ((spi->SR & SPI_SR_BSY) || !lcd->DMA_TX_Complete) { __NOP(); } //ждем когда SPI освободится
+		if (!lcd->cs_control) LCD_CS_LOW
+		if (!lcd->dc_control) LCD_DC_HI
+		//++++++++++++++++++++++++++++++++++++++++++++++++++
+		lcd->addr_mem = (uint32_t)data;
+		lcd->size_mem = len;
+		//++++++++++++++++++++++++++++++++++++++++++++++++++
+		lcd->DMA_TX_Complete = 0;
 		spi->CR1 &= ~SPI_CR1_SPE; // SPI выключаем, чтобы изменить параметры
 		spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
 					   SPI_CR1_RXONLY |   	//  Transmit - передача
@@ -519,29 +548,20 @@ void LCD_WriteDataDMA(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 		uint8_t shift[8] = {0, 6, 16, 22, 0, 6, 16, 22}; //битовое смещение во флаговых регистрах IFCR (L и H)
 		volatile uint32_t *ifcr_tx = (stream > 3) ? &(dma_x->HIFCR) : &(dma_x->LIFCR);
 		//выключаем канал DMA передачи tx
-		dma_TX->CR &= ~DMA_SxCR_EN;
-		while (dma_TX->CR & DMA_SxCR_EN) {__NOP();} //ждем отключения канала DMA
+//		dma_TX->CR &= ~DMA_SxCR_EN;
+//		while (dma_TX->CR & DMA_SxCR_EN) {__NOP();} //ждем отключения канала DMA
 		//сбрасываем флаги прерываний tx
 		*ifcr_tx = 0x3F<<shift[stream];
 		//разрешаем spi принимать запросы от DMA
 		spi->CR2 |= SPI_CR2_TXDMAEN;
-		//запрещаем прерывания по некоторым событиям канала передачи tx и режим двойного буфера
-		dma_TX->CR &= ~(DMA_SxCR_DMEIE | DMA_SxCR_HTIE | DMA_SxCR_DBM);
-		dma_TX->FCR &= ~DMA_SxFCR_FEIE;
-		//разрешаем прерывания по ошибке и по окончанию передачи
-		dma_TX->CR |= (DMA_SxCR_TEIE | DMA_SxCR_TCIE);
-		dma_TX->CR &= ~DMA_SxCR_PINC; //инкремент адреса периферии источника отключен
-		dma_TX->CR |= DMA_SxCR_MINC;  //инкремент адреса памяти источника включен
 		//настраиваем адреса и длину
 		dma_TX->PAR = (uint32_t)(&spi->DR); //приемник периферия - адрес регистра DR spi
 		dma_TX->M0AR = (uint32_t)data; //источник память - адрес буфера исходящих данных
 		dma_TX->NDTR = (uint32_t)len; //размер передаваемых данных
-		dma_TX->CR |= (DMA_SxCR_EN); //включение канала передачи
+		dma_TX->CR |= (DMA_SxCR_EN); //включение канала передачи (старт DMA передачи)
+		return;
 	}
-	else
-	{
-		LCD_WriteData(lcd, data, len);
-	}
+	LCD_WriteData(lcd, data, len);
 }
 
 void LCD_FillWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color)
@@ -550,15 +570,15 @@ void LCD_FillWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uin
 	uint16_t tmp;
 	if (x1 > x2) { tmp = x1; x1 = x2; x2 = tmp; }
 	if (y1 > y2) { tmp = y1; y1 = y2; y2 = tmp; }
-	if (x1 > lcd->Width-1 || y1 > lcd->Height - 1) return;
-	if (x2 > lcd->Width - 1) x2 = lcd->Width - 1;
-	if (y2 > lcd->Height - 1) x2 = lcd->Height - 1;
+	if (x1 > lcd->Width - 1 || y1 > lcd->Height - 1) return;
+	if (x2 > lcd->Width - 1)  x2 = lcd->Width - 1;
+	if (y2 > lcd->Height - 1) y2 = lcd->Height - 1;
 	LCD_SetActiveWindow(lcd, x1, y1, x2, y2);
 	uint32_t len = x2 - x1 + 1;
 	lcd->DMA_Counter = y2 - y1 + 1;
 	if (lcd->spi_data.dma_tx.dma)
 	{
-		lcd->tmp_buf = (uint16_t*)calloc(len, sizeof(uint16_t));
+		lcd->tmp_buf = (uint16_t*)malloc(2*len);
 		for (uint32_t i = 0; i < len; i++)
 		{
 			lcd->tmp_buf[i] = color16;
@@ -566,11 +586,10 @@ void LCD_FillWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uin
 		LCD_WriteDataDMA(lcd, lcd->tmp_buf, len);
 		return;
 	}
-	SPI_TypeDef *spi = lcd->spi_data.spi;
-	while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-	LCD_DC_HI;
-	LCD_CS_LOW;
+	if (!lcd->cs_control) LCD_CS_LOW
+	if (!lcd->dc_control) LCD_DC_HI
 	len *= lcd->DMA_Counter;
+	SPI_TypeDef *spi = lcd->spi_data.spi;
 	spi->CR1 &= ~SPI_CR1_SPE; // SPI выключаем, чтобы изменить параметры
 	spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
 				   SPI_CR1_RXONLY |   	//  Transmit only
@@ -586,24 +605,26 @@ void LCD_FillWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uin
 		while(len)
 		{
 			spi->DR = color16; //записываем данные в регистр
-			while (!(spi->SR & SPI_SR_TXE)) { ; } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
 			len--;
 		}
 	}
 	else
 	{
-		uint8_t color1 = color16 >> 8, color2 = color16 & 0xFF;
+		uint8_t color1 = color16 & 0xFF, color2 = color16 >> 8;
 		while(len)
 		{
 			spi->DR = color1;
-			while (!(spi->SR & SPI_SR_TXE)) { ; } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
 			spi->DR = color2;
-			while (!(spi->SR & SPI_SR_TXE)) { ; } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
 			len--;
 		}
 	}
-	while (spi->SR & SPI_SR_BSY) { ; } //ждем пока SPI освободится
-	LCD_CS_HI;
+	while (spi->SR & SPI_SR_BSY) { __NOP(); } //ждем когда SPI освободится
+	if (!lcd->cs_control) LCD_CS_HI
+	//выключаем spi
+	spi->CR1 &= ~SPI_CR1_SPE;
 }
 
 void LCD_Fill(LCD_Handler* lcd, uint32_t color)
@@ -757,17 +778,19 @@ void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *f
 	int i, j, k, n;
 	uint32_t tmp;
 	const void *b = font->data;
-	uint16_t data[font->height*font->width], *d;
+	uint16_t *data = (uint16_t*)malloc(2*font->height*font->width);
+	uint16_t *d = data;
 	uint16_t txcolor16 = LCD_Color_24b_to_16b(lcd, txcolor);
 	uint16_t bgcolor16 = LCD_Color_24b_to_16b(lcd, bgcolor);
 	ch = ch < font->firstcode || ch > font->lastcode ? 0: ch - font->firstcode;
 	int bytes_per_line = ((font->width-1)>>3) + 1;
 	k = 1<<((bytes_per_line<<3) - 1);
 	b +=  ch * bytes_per_line * font->height;
-	d = data;
-	for (i = 0; i < font->height; i++) {
+	for (i = 0; i < font->height; i++)
+	{
 		tmp = n = 0;
-		for (j = 0; j < bytes_per_line; j++) {
+		for (j = 0; j < bytes_per_line; j++)
+		{
 			tmp += (*((uint8_t*)b))<<n;
 			n += 8;
 			b++;
@@ -781,8 +804,18 @@ void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *f
 	}
 	if (modesym == LCD_SYMBOL_PRINT_FAST)
 	{
-		LCD_SetActiveWindow(lcd, x, y, x + font->width - 1, y + font->height - 1);
-		LCD_WriteData(lcd, data, font->height*font->width);
+		if (lcd->spi_data.dma_tx.dma)
+		{
+			while (LCD_GetState(lcd) != LCD_STATE_READY) {__NOP();}
+			lcd->DMA_Counter = 1;
+			lcd->tmp_buf = data;
+			LCD_DrawImage(lcd, x, y, font->width, font->height, data, 1);
+		}
+		else
+		{
+			LCD_DrawImage(lcd, x, y, font->width, font->height, data, 0);
+			free(data);
+		}
 	}
 }
 
@@ -923,18 +956,20 @@ void LCD_DrawFilledCircle(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t r, u
 	}
 }
 
-uint16_t LCD_Color (LCD_Handler *lcd, uint8_t r, uint8_t g, uint8_t b)
+inline uint16_t LCD_Color (LCD_Handler *lcd, uint8_t r, uint8_t g, uint8_t b)
 {
 	uint16_t color = (((uint16_t)r & 0xF8) << 8) | (((uint16_t)g & 0xFC) << 3) | (((uint16_t)b >> 3));
 	if (lcd->data_bus == LCD_DATA_8BIT_BUS) //8-битная передача
 	{
-		color = (color >> 8) | (color & 0xFF)<<8;
+		color = (color >> 8) | ((color & 0xFF) << 8);
 	}
 	return color;
 }
 
-uint16_t LCD_Color_24b_to_16b(LCD_Handler *lcd, uint32_t color)
+inline uint16_t LCD_Color_24b_to_16b(LCD_Handler *lcd, uint32_t color)
 {
-	uint8_t *tmp = (uint8_t*)&color;
-	return LCD_Color(lcd, tmp[2], tmp[1], tmp[0]);
+	uint8_t r = (color >> 16) & 0xff;
+	uint8_t g = (color >> 8) & 0xff;
+	uint8_t b = color & 0xff;
+	return LCD_Color(lcd, r, g, b);
 }
