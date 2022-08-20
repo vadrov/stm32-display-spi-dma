@@ -1,10 +1,14 @@
 /*
- *  ili9341.c
  *	Драйвер управления дисплеями по SPI
- *  Created on: 19 сент. 2020 г.
  *  Author: VadRov
- *  Версия: 1.1 LL (на регистрах и частично LL)
- *  для STM32F4
+ *  Copyright (C) 2020, VadRov, all right reserved.
+ *
+ *  Допускается свободное распространение без целей коммерческого использования.
+ *  При коммерческом использовании необходимо согласование с автором.
+ *  Распространятся по типу "как есть", то есть использование осуществляете на свой страх и риск.
+ *  Автор не предоставляет никаких гарантий.
+ *
+ *  Версия: 1.3 LL (на регистрах и частично LL) для STM32F4
  *
  *  https://www.youtube.com/c/VadRov
  *  https://zen.yandex.ru/vadrov
@@ -12,7 +16,7 @@
  *  https://t.me/vadrov_channel 
  */
 
-#include <stdlib.h>
+#include "main.h"
 #include "ili9341.h"
 #include "display.h"
 
@@ -69,10 +73,10 @@ uint8_t ili9341_sleepout_str[] = {
 static uint8_t ILI9341_MemoryDataAccessControlConfig(uint8_t mirror_x, uint8_t mirror_y, uint8_t exchange_xy, uint8_t mirror_color, uint8_t refresh_v, uint8_t refresh_h)
 {
 	uint8_t mem_config = 0;
-	if(mirror_x) 		mem_config |= ILI9341_MADCTL_MX;
-	if(mirror_y) 		mem_config |= ILI9341_MADCTL_MY;
-	if(exchange_xy) 	mem_config |= ILI9341_MADCTL_MV;
-	if(mirror_color) 	mem_config |= ILI9341_MADCTL_BGR;
+	if (mirror_x)		mem_config |= ILI9341_MADCTL_MX;
+	if (mirror_y)		mem_config |= ILI9341_MADCTL_MY;
+	if (exchange_xy)	mem_config |= ILI9341_MADCTL_MV;
+	if (mirror_color)	mem_config |= ILI9341_MADCTL_BGR;
 	if (refresh_v)		mem_config |= ILI9341_MADCTL_ML;
 	if (refresh_h)		mem_config |= ILI9341_MADCTL_MH;
 	return mem_config;
@@ -86,7 +90,6 @@ uint8_t* ILI9341_Init(uint8_t orientation)
 	else if (orientation == PAGE_ORIENTATION_LANDSCAPE) 		mem_config = ILI9341_MemoryDataAccessControlConfig(0, 0, 1, 1, 0, 1);
 	else if (orientation == PAGE_ORIENTATION_LANDSCAPE_MIRROR) 	mem_config = ILI9341_MemoryDataAccessControlConfig(1, 1, 1, 1, 1, 0);
 	ili9341_init_str[65] = mem_config;
-	//ili9341_init_str[11] = mem_config;
 	return ili9341_init_str;
 }
 
