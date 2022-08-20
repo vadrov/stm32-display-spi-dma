@@ -24,7 +24,7 @@
 typedef struct {
     const uint8_t width;
     const uint8_t height;
-    const void *data;
+    const uint8_t *data;
     const uint8_t firstcode;
     const uint8_t lastcode;
 } FontDef;
