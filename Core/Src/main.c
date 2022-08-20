@@ -68,7 +68,18 @@ uint32_t millis = 0;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+/* включаем кэширование инструкций */
+#if (INSTRUCTION_CACHE_ENABLE != 0U)
+	((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (9U));
+#endif
+/* включаем кэширование данных */
+#if (DATA_CACHE_ENABLE != 0U)
+	((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (10U));
+#endif
+/* включаем систему предварительной выборки инструкций*/
+#if (PREFETCH_ENABLE != 0U)
+	((FLASH_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x3C00UL))->ACR |= (0x1UL << (8U));
+#endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -119,19 +130,20 @@ int main(void)
 									 LCD_CS_GPIO_Port,
 									 LCD_CS_Pin         };
 
-  LCD_Handler *lcd = LCD_Create(	240,
-  									240,
-									ST7789_CONTROLLER_WIDTH,
-									ST7789_CONTROLLER_HEIGHT,
-									PAGE_ORIENTATION_PORTRAIT,
-									ST7789_Init,
-									ST7789_SetWindow,
-									ST7789_SleepIn,
-									ST7789_SleepOut,
-									&spi_con,
-									LCD_DATA_16BIT_BUS,
-									bkl_data				   );
-
+  LCD = LCD_Create( 	240,
+		   	240,
+			ST7789_CONTROLLER_WIDTH,
+			ST7789_CONTROLLER_HEIGHT,
+			PAGE_ORIENTATION_PORTRAIT,
+			ST7789_Init,
+			ST7789_SetWindow,
+			ST7789_SleepIn,
+			ST7789_SleepOut,
+			&spi_con,
+			LCD_DATA_16BIT_BUS,
+			bkl_data );
+	
+  LCD_Handler *lcd = LCD; //указатель на первый дисплей в списке
   LCD_Init(lcd);
 
   LCD_Fill(lcd, COLOR_RED);
