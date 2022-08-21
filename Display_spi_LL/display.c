@@ -1,14 +1,14 @@
 /*
  *	Драйвер управления дисплеями по SPI
  *  Author: VadRov
- *  Copyright (C) 2020, VadRov, all right reserved.
+ *  Copyright (C) 2019 - 2022, VadRov, all right reserved.
  *
  *  Допускается свободное распространение без целей коммерческого использования.
  *  При коммерческом использовании необходимо согласование с автором.
  *  Распространятся по типу "как есть", то есть использование осуществляете на свой страх и риск.
  *  Автор не предоставляет никаких гарантий.
  *
- *  Версия: 1.3 LL (на регистрах и частично LL) для STM32F4
+ *  Версия: 1.4 (на CMSIS и LL) для STM32F4
  *
  *  https://www.youtube.com/c/VadRov
  *  https://zen.yandex.ru/vadrov
@@ -17,10 +17,13 @@
  *
  */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
 #include "display.h"
 #include "fonts.h"
+#ifdef LCD_DYNAMIC_MEM
+#include "stdlib.h"
+#endif
+
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
 #define MAX(x, y) (x > y ? x : y)
@@ -81,6 +84,7 @@ void Display_TC_Callback(DMA_TypeDef *dma_x, uint32_t stream)
 				dma_TX->CR |= (DMA_SxCR_EN);
 				return;
 			}
+#ifdef LCD_DYNAMIC_MEM
 			//очищаем буфер дисплея
 			if (lcd->tmp_buf)
 			{
@@ -91,6 +95,7 @@ void Display_TC_Callback(DMA_TypeDef *dma_x, uint32_t stream)
 				lcd->tmp_buf = 0;
 				ENABLE_IRQ
 			}
+#endif
 			//запрещаем SPI принимать запросы от DMA
 			lcd->spi_data.spi->CR2 &= ~SPI_CR2_TXDMAEN;
 			while (lcd->spi_data.spi->SR & SPI_SR_BSY) { __NOP(); } //ждем пока SPI освободится
@@ -210,6 +215,10 @@ void LCD_String_Interpretator(LCD_Handler* lcd, uint8_t *str)
 //возвращает указатель на созданный обработчик либо 0 при неудаче
 LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,     /* указатель на список дисплеев
 													  (первый дисплей в списке) */
+#ifndef LCD_DYNAMIC_MEM
+							LCD_Handler *lcd,	   /* указатель на создаваемый обработчик дисплея
+													  в случае статического выделения памяти */
+#endif
 							uint16_t resolution1,
 							uint16_t resolution2,
 							uint16_t width_controller,
@@ -224,8 +233,11 @@ LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,     /* указатель на с
 							LCD_BackLight_data bkl_data
 					   )
 {
-	LCD_Handler* lcd = (LCD_Handler*)calloc(1, sizeof(LCD_Handler));
+#ifdef LCD_DYNAMIC_MEM
+	LCD_Handler* lcd = (LCD_Handler*)malloc(sizeof(LCD_Handler));
+#endif
 	if (!lcd) return 0;
+	memset(lcd, 0, sizeof(LCD_Handler));
 	LCD_DMA_TypeDef *hdma = 0;
 	lcd->data_bus = data_bus;
 	//инициализация данных подключения
@@ -317,6 +329,9 @@ LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,     /* указатель на с
 	lcd->display_number = 0;
 	lcd->next = 0;
 	lcd->prev = 0;
+#ifndef LCD_DYNAMIC_MEM
+	lcd->tmp_buf = lcd->display_work_buffer;
+#endif
 	if (!lcds) return lcd;
 	LCD_Handler *prev = lcds;
 	while (prev->next)
@@ -334,10 +349,13 @@ void LCD_Delete(LCD_Handler* lcd)
 {
 	if (lcd)
 	{
+#ifdef LCD_DYNAMIC_MEM
 		if (lcd->tmp_buf)	free(lcd->tmp_buf);
+#endif
 		memset(lcd, 0, sizeof(LCD_Handler));
+#ifdef LCD_DYNAMIC_MEM
 		free(lcd);
-		lcd  = 0;
+#endif
 	}
 }
 
@@ -573,22 +591,33 @@ void LCD_FillWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uin
 	if (x1 > lcd->Width - 1 || y1 > lcd->Height - 1) return;
 	if (x2 > lcd->Width - 1)  x2 = lcd->Width - 1;
 	if (y2 > lcd->Height - 1) y2 = lcd->Height - 1;
-	LCD_SetActiveWindow(lcd, x1, y1, x2, y2);
 	uint32_t len = x2 - x1 + 1;
-	lcd->DMA_Counter = y2 - y1 + 1;
 	if (lcd->spi_data.dma_tx.dma)
 	{
-		lcd->tmp_buf = (uint16_t*)malloc(2*len);
+#ifdef LCD_DYNAMIC_MEM
+		uint16_t *data = (uint16_t*)malloc(2*len);
+#else
+		uint16_t *data = lcd->tmp_buf;
+#endif
 		for (uint32_t i = 0; i < len; i++)
 		{
-			lcd->tmp_buf[i] = color16;
+			data[i] = color16;
 		}
+		LCD_SetActiveWindow(lcd, x1, y1, x2, y2);
+		lcd->DMA_Counter = y2 - y1 + 1;
+#ifdef LCD_DYNAMIC_MEM
+		lcd->tmp_buf = data;
+#endif
 		LCD_WriteDataDMA(lcd, lcd->tmp_buf, len);
+#ifndef LCD_DYNAMIC_MEM
+		lcd->tmp_buf = (lcd->tmp_buf == lcd->display_work_buffer) ? lcd->display_work_buffer + LCD_STATIC_WORK_BUFFER_SIZE/2 : lcd->display_work_buffer;
+#endif
 		return;
 	}
+	LCD_SetActiveWindow(lcd, x1, y1, x2, y2);
 	if (!lcd->cs_control) LCD_CS_LOW
 	if (!lcd->dc_control) LCD_DC_HI
-	len *= lcd->DMA_Counter;
+	len *= y2 - y1 + 1;
 	SPI_TypeDef *spi = lcd->spi_data.spi;
 	spi->CR1 &= ~SPI_CR1_SPE; // SPI выключаем, чтобы изменить параметры
 	spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
@@ -778,7 +807,11 @@ void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *f
 	int i, j, k, n;
 	uint32_t tmp;
 	const uint8_t *b = font->data;
+#ifdef LCD_DYNAMIC_MEM
 	uint16_t *data = (uint16_t*)malloc(2*font->height*font->width);
+#else
+	uint16_t *data = lcd->tmp_buf;
+#endif
 	uint16_t *d = data;
 	uint16_t txcolor16 = LCD_Color_24b_to_16b(lcd, txcolor);
 	uint16_t bgcolor16 = LCD_Color_24b_to_16b(lcd, bgcolor);
@@ -808,13 +841,19 @@ void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *f
 		{
 			while (LCD_GetState(lcd) != LCD_STATE_READY) {__NOP();}
 			lcd->DMA_Counter = 1;
+#ifndef LCD_DYNAMIC_MEM
+			lcd->tmp_buf = (lcd->tmp_buf == lcd->display_work_buffer) ? lcd->display_work_buffer + LCD_STATIC_WORK_BUFFER_SIZE/2 : lcd->display_work_buffer;
+#else
 			lcd->tmp_buf = data;
+#endif
 			LCD_DrawImage(lcd, x, y, font->width, font->height, data, 1);
 		}
 		else
 		{
 			LCD_DrawImage(lcd, x, y, font->width, font->height, data, 0);
+#ifdef LCD_DYNAMIC_MEM
 			free(data);
+#endif
 		}
 	}
 }
