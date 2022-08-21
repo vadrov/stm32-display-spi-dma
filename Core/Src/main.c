@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ *	Драйвер управления дисплеями по SPI
+ *  Author: VadRov
+ *  Copyright (C) 2019 - 2022, VadRov, all right reserved.
+ *
+ *  Допускается свободное распространение без целей коммерческого использования.
+ *  При коммерческом использовании необходимо согласование с автором.
+ *  Распространятся по типу "как есть", то есть использование осуществляете на свой страх и риск.
+ *  Автор не предоставляет никаких гарантий.
+ *
+ *  Версия: 1.4 (CMSIS и LL) для STM32F4
+ *
+ *  https://www.youtube.com/c/VadRov
+ *  https://zen.yandex.ru/vadrov
+ *  https://vk.com/vadrov
+ *  https://t.me/vadrov_channel
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -129,8 +129,16 @@ int main(void)
 									 LCD_DC_Pin,
 									 LCD_CS_GPIO_Port,
 								 	 LCD_CS_Pin         };
+
+#ifndef LCD_DYNAMIC_MEM
+  LCD_Handler lcd1;
+#endif
+
 /*  Для дисплея на контроллере ST7789   */
   LCD = LCD_DisplayAdd( LCD,
+#ifndef LCD_DYNAMIC_MEM
+		  	  	  	  	&lcd1,
+#endif
 		  	  	  	  	240,
 		   				240,
 						ST7789_CONTROLLER_WIDTH,
@@ -143,15 +151,17 @@ int main(void)
 						&spi_con,
 						LCD_DATA_16BIT_BUS,
 						bkl_data );
-
 /*  Для дисплея на контроллере ILI9341   */
 /*
   LCD = LCD_DisplayAdd( LCD,
+#ifndef LCD_DYNAMIC_MEM
+		  	  	  	  	&lcd1,
+#endif
 		  	  	  	  	320,
 		   				240,
 						ILI9341_CONTROLLER_WIDTH,
 						ILI9341_CONTROLLER_HEIGHT,
-						PAGE_ORIENTATION_PORTRAIT,
+						PAGE_ORIENTATION_PORTRAIT_MIRROR,
 						ILI9341_Init,
 						ILI9341_SetWindow,
 						ILI9341_SleepIn,
@@ -165,6 +175,7 @@ int main(void)
 
   LCD_Fill(lcd, COLOR_RED);
   LCD_WriteString(lcd, 0, 0, "Hello, world!", &Font_15x25, COLOR_YELLOW, COLOR_BLUE, LCD_SYMBOL_PRINT_FAST);
+  LL_mDelay(2000);
 
   /* USER CODE END 2 */
 
@@ -182,11 +193,12 @@ int main(void)
   		  LCD_Fill(lcd, COLOR_RED);
 
   		  /* задержка */
+  		  /*
   		  for (uint32_t i = 0; i<100000; i++)
 		  {
 			  __NOP();
 		  }
-
+  		  */
   		  frames++;
   	  }
   	  utoa(frames, buff, 10);
