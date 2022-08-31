@@ -12,8 +12,8 @@
  <p>Библиотека не использует HAL, а базируется на CMSIS и LL.</p>
  <p>В качестве примера, в коде проекта, созданного в среде STM32CudeIDE, представлено подключение дисплеев с контроллерами 
  ST7789 и ILI9341 к микроконтроллеру STM32F401CCU6 по SPI с DMA. Демонстрируется преимущество использования DMA.</p>
- <p>Как использовать библиотеку и настроить проект в среде STM32CudeIDE подробно рассказано в видео:
- [![Watch the video](https://img.youtube.com/vi/8tIJ16riJqo/maxresdefault.jpg)](https://youtu.be/8tIJ16riJqo)</p>
+ <p>Как использовать библиотеку и настроить проект в среде STM32CudeIDE подробно рассказано в видео:</p>
+ [![Watch the video](https://img.youtube.com/vi/8tIJ16riJqo/maxresdefault.jpg)](https://youtu.be/8tIJ16riJqo)
  <p>Upd.: Замечание к видео (там старый релиз библиотеки). Новый релиз библиотеки требует:</p>
  <ul>
  <li>Настройки DMA не в режиме Circular, как в видео, а в режиме Normal.</li>
