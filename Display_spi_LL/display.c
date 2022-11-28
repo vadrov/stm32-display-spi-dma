@@ -798,6 +798,7 @@ void LCD_DrawImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_
 		LCD_WriteData(lcd, (uint16_t *)data, w * h);
 }
 
+//Вариант вывода символа с использованием буфера и с DMA (если оно активно)
 //вывод символа ch текста с позиции x, y, шрифтом font, цветом букв color, цветом окружения bgcolor
 //modesym - определяет, как выводить символ:
 //LCD_SYMBOL_PRINT_FAST - быстрый вывод с полным затиранием знакоместа
@@ -857,6 +858,85 @@ void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *f
 		}
 	}
 }
+
+/*
+//Вариант вывода символа без использования буфера и без DMA (spi 16 бит)
+//вывод символа ch текста с позиции x, y, шрифтом font, цветом букв color, цветом окружения bgcolor
+//modesym - определяет, как выводить символ:
+//LCD_SYMBOL_PRINT_FAST - быстрый вывод с полным затиранием знакоместа
+//LCD_SYMBOL_PRINT_PSETBYPSET - вывод символа по точкам, при этом цвет окружения bgcolor игнорируется (режим наложения)
+void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *font, uint32_t txcolor, uint32_t bgcolor, LCD_PrintSymbolMode modesym)
+{
+	int i, j, k, n;
+	uint32_t tmp;
+	const uint8_t *b = font->data;
+	uint16_t color;
+	uint16_t txcolor16 = LCD_Color_24b_to_16b(lcd, txcolor);
+	uint16_t bgcolor16 = LCD_Color_24b_to_16b(lcd, bgcolor);
+	ch = ch < font->firstcode || ch > font->lastcode ? 0: ch - font->firstcode;
+	int bytes_per_line = ((font->width-1)>>3) + 1;
+	k = 1<<((bytes_per_line<<3) - 1);
+	b +=  ch * bytes_per_line * font->height;
+	SPI_TypeDef *spi = lcd->spi_data.spi;
+	if (modesym == LCD_SYMBOL_PRINT_FAST)
+	{
+		LCD_SetActiveWindow(lcd, x, y, x + font->width - 1, y + font->height - 1);
+		LCD_CS_LOW
+		LCD_DC_HI
+		spi->CR1 &= ~SPI_CR1_SPE; // SPI выключаем, чтобы изменить параметры
+		spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
+					   SPI_CR1_RXONLY |   	//  Transmit only
+					   SPI_CR1_CRCEN | 		//выключаем аппаратный расчет CRC
+					   SPI_CR1_DFF); 		//8-битная передача
+		if (lcd->data_bus == LCD_DATA_16BIT_BUS)
+		{
+			spi->CR1 |= SPI_CR1_DFF; //16-битная передача
+		}
+		spi->CR1 |= SPI_CR1_SPE; // SPI включаем
+		for (i = 0; i < font->height; i++)
+		{
+			tmp = n = 0;
+			for (j = 0; j < bytes_per_line; j++)
+			{
+				tmp += (*((uint8_t*)b))<<n;
+				n += 8;
+				b++;
+			}
+			for (j = 0; j < font->width; j++)
+			{
+				color = (tmp << j) & k ? txcolor16: bgcolor16;
+				while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+				spi->DR = color;
+			}
+		}
+		while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+		while (spi->SR & SPI_SR_BSY) { __NOP(); } //ждем когда SPI освободится
+		//выключаем spi
+		spi->CR1 &= ~SPI_CR1_SPE;
+		LCD_CS_HI
+	}
+	else
+	{
+		for (i = 0; i < font->height; i++)
+		{
+			tmp = n = 0;
+			for (j = 0; j < bytes_per_line; j++)
+			{
+				tmp += (*((uint8_t*)b))<<n;
+				n += 8;
+				b++;
+			}
+			for (j = 0; j < font->width; j++)
+			{
+				if ((tmp << j) & k)
+				{
+					LCD_DrawPixel(lcd, x + j, y + i, txcolor);
+				}
+			}
+		}
+	}
+}
+*/
 
 //вывод строки str текста с позиции x, y, шрифтом font, цветом букв color, цветом окружения bgcolor
 //modesym - определяет, как выводить текст:
