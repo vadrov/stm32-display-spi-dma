@@ -150,7 +150,6 @@ typedef struct {
 	LCD_SPI_Connected_data spi_data;					//данные подключения по SPI
 	LCD_DATA_BUS data_bus;								//ширина данных
 	LCD_BackLight_data bkl_data;						//данные подсветки
-	uint8_t DMA_TX_Complete;							//флаг окончания передачи данных по DMA
 	uint16_t *tmp_buf;									//указатель на буфер дисплея
 #ifndef LCD_DYNAMIC_MEM
 	uint16_t display_work_buffer[LCD_STATIC_WORK_BUFFER_SIZE];
