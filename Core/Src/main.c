@@ -1,5 +1,5 @@
 /* USER CODE BEGIN Header */
- *	Драйвер управления дисплеями по SPI
+/*	Драйвер управления дисплеями по SPI
  *  Author: VadRov
  *  Copyright (C) 2019 - 2022, VadRov, all right reserved.
  *
@@ -10,11 +10,11 @@
  *
  *  Версия: 1.4 (CMSIS и LL) для STM32F4
  *
- *  https://www.youtube.com/c/VadRov
- *  https://zen.yandex.ru/vadrov
+ *  https://www.youtube.com/@VadRov
+ *  https://dzen.ru/vadrov
  *  https://vk.com/vadrov
  *  https://t.me/vadrov_channel
-
+*/
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
