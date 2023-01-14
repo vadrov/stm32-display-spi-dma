@@ -228,27 +228,27 @@ void LCD_FillWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uin
 //заливает весь экран заданным цветом
 void LCD_Fill(LCD_Handler* lcd, uint32_t color);
 //рисует точку в заданных координатах заданным цветом
-void LCD_DrawPixel(LCD_Handler* lcd, uint16_t x, uint16_t y, uint32_t color);
+void LCD_DrawPixel(LCD_Handler* lcd, int16_t x, int16_t y, uint32_t color);
 //рисует линию по заданным координатам заданным цветом
-void LCD_DrawLine(LCD_Handler* lcd, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint32_t color);
+void LCD_DrawLine(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint32_t color);
 //рисует прямоугольник по заданным координатам заданным цветом
-void LCD_DrawRectangle(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);
+void LCD_DrawRectangle(LCD_Handler* lcd, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t color);
 //рисует закрашенный прямоугольник по заданным координатам заданным цветом
-void LCD_DrawFilledRectangle(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);
+void LCD_DrawFilledRectangle(LCD_Handler* lcd, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t color);
+//рисует треугольник
+void LCD_DrawTriangle(LCD_Handler* lcd, int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, int16_t y3, uint32_t color);
+//рисует закрашенный треугольник
+void LCD_DrawFilledTriangle(LCD_Handler* lcd, int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, int16_t y3, uint32_t color);
 //рисует окружность с заданным центром и радиусом с заданным цветом
-void LCD_DrawCircle(LCD_Handler* lcd, uint16_t x0, uint16_t y0, uint8_t r, uint32_t color);
+void LCD_DrawCircle(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t r, uint32_t color);
+//рисует закрашенную окружность
+void LCD_DrawFilledCircle(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t r, uint32_t color);
 //пересылает на дисплей блок памяти (например, кусок изображения)
 void LCD_DrawImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *data, uint8_t dma_use_flag);
 //выводит символ в указанной позиции
 void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *font, uint32_t txcolor, uint32_t bgcolor, LCD_PrintSymbolMode modesym);
-//выцводит строку символов с указанной позиции
+//выводит строку символов с указанной позиции
 void LCD_WriteString(LCD_Handler* lcd, uint16_t x, uint16_t y, const char *str, FontDef *font, uint32_t color, uint32_t bgcolor, LCD_PrintSymbolMode modesym);
-//рисует треугольник
-void LCD_DrawTriangle(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint32_t color);
-//рисует закрашенный прямоугольник
-void LCD_DrawFilledTriangle(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint32_t color);
-//рисует закрашенную окружность
-void LCD_DrawFilledCircle(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t r, uint32_t color);
 //преобразует цвет в формате R8G8B8 (24 бита) в 16 битовый R5G6B5
 uint16_t LCD_Color(LCD_Handler *lcd, uint8_t r, uint8_t g, uint8_t b);
 uint16_t LCD_Color_24b_to_16b(LCD_Handler *lcd, uint32_t color);

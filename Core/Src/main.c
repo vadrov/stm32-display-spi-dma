@@ -1,5 +1,6 @@
 /* USER CODE BEGIN Header */
-/*	Драйвер управления дисплеями по SPI
+/*
+ *	Драйвер управления дисплеями по SPI
  *  Author: VadRov
  *  Copyright (C) 2019 - 2022, VadRov, all right reserved.
  *
@@ -102,7 +103,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  SysTick_Config(84000);
+  //настраиваем системный таймер (прерывания 1000 раз в секунду)
+  SysTick_Config(SystemCoreClock/1000);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -151,7 +153,8 @@ int main(void)
 						&spi_con,
 						LCD_DATA_16BIT_BUS,
 						bkl_data );
-/*  Для дисплея на контроллере ILI9341   */
+
+  /*  Для дисплея на контроллере ILI9341   */
 /*
   LCD = LCD_DisplayAdd( LCD,
 #ifndef LCD_DYNAMIC_MEM
@@ -172,7 +175,6 @@ int main(void)
 */
   LCD_Handler *lcd = LCD; //указатель на первый дисплей в списке
   LCD_Init(lcd);
-
   LCD_Fill(lcd, COLOR_RED);
   LCD_WriteString(lcd, 0, 0, "Hello, world!", &Font_15x25, COLOR_YELLOW, COLOR_BLUE, LCD_SYMBOL_PRINT_FAST);
   LL_mDelay(2000);
@@ -184,13 +186,18 @@ int main(void)
   uint32_t tick;
   uint32_t frames;
   char buff[10];
+  uint8_t r = 0, g = 0, b = 0;
   while (1)
   {
   	  frames = 0;
   	  tick = millis;
   	  while (millis - tick < 1000)
   	  {
-  		  LCD_Fill(lcd, COLOR_RED);
+  		  LCD_Fill(lcd, (r << 16) | (g << 8) | b);
+
+  		  r++;
+  		  g += 2;
+  		  b += 4;
 
   		  /* задержка */
   		  /*
@@ -316,7 +323,7 @@ static void MX_SPI1_Init(void)
   /* SPI1 parameter configuration*/
   SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
   SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
-  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_16BIT;
+  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
@@ -400,7 +407,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA2_Stream3_IRQn interrupt configuration */
-  NVIC_SetPriority(DMA2_Stream3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_SetPriority(DMA2_Stream3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),3, 0));
   NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
 }

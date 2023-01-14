@@ -8,17 +8,19 @@
  *  Распространятся по типу "как есть", то есть использование осуществляете на свой страх и риск.
  *  Автор не предоставляет никаких гарантий.
  *
- *  Версия: 1.4 (CMSIS и LL) для STM32F4
+ *  Версия: 1.4 (на CMSIS и LL) для STM32F4
  *
- *  https://www.youtube.com/c/VadRov
- *  https://zen.yandex.ru/vadrov
+ *  https://www.youtube.com/@VadRov
+ *  https://dzen.ru/vadrov
  *  https://vk.com/vadrov
- *  https://t.me/vadrov_channel 
+ *  https://t.me/vadrov_channel
  */
 
+#include "../Display/ili9341.h"
+
 #include "main.h"
-#include "ili9341.h"
-#include "display.h"
+
+#include "../Display/display.h"
 
 uint8_t ili9341_init_str[] = {
 			LCD_UPR_COMMAND, ILI9341_SOFTRESET, 0,
