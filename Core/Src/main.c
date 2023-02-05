@@ -145,6 +145,9 @@ int main(void)
 		   				240,
 						ST7789_CONTROLLER_WIDTH,
 						ST7789_CONTROLLER_HEIGHT,
+						//Задаем смещение по ширине и высоте для нестандартных или бракованных дисплеев:
+						0,		//смещение по ширине дисплейной матрицы
+						0,		//смещение по высоте дисплейной матрицы
 						PAGE_ORIENTATION_PORTRAIT,
 						ST7789_Init,
 						ST7789_SetWindow,
@@ -153,7 +156,6 @@ int main(void)
 						&spi_con,
 						LCD_DATA_16BIT_BUS,
 						bkl_data );
-
   /*  Для дисплея на контроллере ILI9341   */
 /*
   LCD = LCD_DisplayAdd( LCD,
@@ -164,6 +166,9 @@ int main(void)
 		   				240,
 						ILI9341_CONTROLLER_WIDTH,
 						ILI9341_CONTROLLER_HEIGHT,
+						//Задаем смещение по ширине и высоте для нестандартных или бракованных дисплеев:
+						0,		//смещение по ширине дисплейной матрицы
+						0,		//смещение по высоте дисплейной матрицы
 						PAGE_ORIENTATION_PORTRAIT_MIRROR,
 						ILI9341_Init,
 						ILI9341_SetWindow,

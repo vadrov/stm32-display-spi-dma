@@ -185,6 +185,8 @@ LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,			/* указатель на пе
 							uint16_t resolution2,
 							uint16_t width_controller,
 							uint16_t height_controller,
+							int16_t w_offs,
+							int16_t h_offs,
 							LCD_PageOrientation orientation,
 							DisplayInitCallback init,
 							DisplaySetWindowCallback set_win,
@@ -244,7 +246,7 @@ void LCD_DrawCircle(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t r, uint32_
 //рисует закрашенную окружность
 void LCD_DrawFilledCircle(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t r, uint32_t color);
 //пересылает на дисплей блок памяти (например, кусок изображения)
-void LCD_DrawImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *data, uint8_t dma_use_flag);
+void LCD_DrawImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t *data, uint8_t dma_use_flag);
 //выводит символ в указанной позиции
 void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *font, uint32_t txcolor, uint32_t bgcolor, LCD_PrintSymbolMode modesym);
 //выводит строку символов с указанной позиции

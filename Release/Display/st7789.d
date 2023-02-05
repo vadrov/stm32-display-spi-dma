@@ -1,4 +1,4 @@
-Display/st7789.o: ../Display/st7789.c ../Display/../Display/st7789.h \
+Display/st7789.o: ../Display/st7789.c ../Display/st7789.h \
  ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_dma.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h \
@@ -19,8 +19,8 @@ Display/st7789.o: ../Display/st7789.c ../Display/../Display/st7789.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_gpio.h \
- ../Display/../Display/display.h ../Display/../Display/fonts.h
-../Display/../Display/st7789.h:
+ ../Display/display.h ../Display/fonts.h
+../Display/st7789.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_dma.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h:
@@ -41,5 +41,5 @@ Display/st7789.o: ../Display/st7789.c ../Display/../Display/st7789.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_spi.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_tim.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_gpio.h:
-../Display/../Display/display.h:
-../Display/../Display/fonts.h:
+../Display/display.h:
+../Display/fonts.h:
