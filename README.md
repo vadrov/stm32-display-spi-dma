@@ -44,7 +44,48 @@ lcd2 = LCD_DisplayAdd (LCD, &lcd_2, параметры второго диспл
 ```c
 LCD_Handler *lcd2_ptr = LCD->next;
 ``` 
-В демо-проекте (см. файл main.c) показаны варианты инициализации дисплея при использовании динамического и статического выделения памяти.
+В демо-проекте (см. файл main.c) показаны варианты инициализации дисплея при использовании динамического и статического выделения памяти. Определение механизма выделения памяти осуществляется параметром LCD_DYNAMIC_MEM в заголовочном файле драйвера display.h.
+##Описание параметров функции LCD_DisplayAdd
+Варианты прототипов:
+1. Для динамического выделения памяти:
+```c
+LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,
+uint16_t resolution1,
+uint16_t resolution2,
+uint16_t width_controller,
+uint16_t height_controller,
+int16_t w_offs,
+int16_t h_offs,
+LCD_PageOrientation orientation,
+DisplayInitCallback init,
+DisplaySetWindowCallback set_win,
+DisplaySleepInCallback sleep_in,
+DisplaySleepOutCallback sleep_out,
+void *connection_data,
+LCD_DATA_BUS data_bus,
+LCD_BackLight_data bkl_data
+);
+``` 
+2. Для статического выделения памяти:
+```c
+LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,
+LCD_Handler *lcd,
+uint16_t resolution1,
+uint16_t resolution2,
+uint16_t width_controller,
+uint16_t height_controller,
+int16_t w_offs,
+int16_t h_offs,
+LCD_PageOrientation orientation,
+DisplayInitCallback init,
+DisplaySetWindowCallback set_win,
+DisplaySleepInCallback sleep_in,
+DisplaySleepOutCallback sleep_out,
+void *connection_data,
+LCD_DATA_BUS data_bus,
+LCD_BackLight_data bkl_data
+);
+``` 
 
 **Если есть проблемы, вызванные потерей связи с контроллером дисплея (зависания дисплея, "каша" и т.п.), то проверьте есть ли подтяжка к питанию (pull_up) линий sck и mosi.** Например, настройка gpio, используемых spi, в виде:
 ```c
