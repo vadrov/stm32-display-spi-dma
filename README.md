@@ -45,46 +45,46 @@ lcd2 = LCD_DisplayAdd (LCD, &lcd_2, параметры второго диспл
 LCD_Handler *lcd2_ptr = LCD->next;
 ``` 
 В демо-проекте (см. файл main.c) показаны варианты инициализации дисплея при использовании динамического и статического выделения памяти. Определение механизма выделения памяти осуществляется параметром LCD_DYNAMIC_MEM в заголовочном файле драйвера display.h.
-##Описание параметров функции LCD_DisplayAdd
-Варианты прототипов:
+## Описание параметров функции LCD_DisplayAdd
+Два варианта прототипов функции LCD_DisplayAdd
 1. Для динамического выделения памяти:
 ```c
-LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,
-uint16_t resolution1,
-uint16_t resolution2,
-uint16_t width_controller,
-uint16_t height_controller,
-int16_t w_offs,
-int16_t h_offs,
-LCD_PageOrientation orientation,
-DisplayInitCallback init,
-DisplaySetWindowCallback set_win,
-DisplaySleepInCallback sleep_in,
-DisplaySleepOutCallback sleep_out,
-void *connection_data,
-LCD_DATA_BUS data_bus,
-LCD_BackLight_data bkl_data
-);
+LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,                //Список дисплеев (определен глобально, как LCD)
+                            uint16_t resolution1,             //Первая из двух физических размерностей матрицы дисплея в пикселях, например, 240
+                            uint16_t resolution2,             //Вторая из двух физических размерностей матрицы дисплея в пикселях, например, 320
+                                                              //Размерности можно указывать в любом порядке
+                            uint16_t width_controller,        //Максимально поддерживаемое контроллером дисплея физическое разрешение матрицы дисплея по горизонтали, пикселей
+                            uint16_t height_controller,       //Максимально поддерживаемое контроллером дисплея физическое разрешение матрицы дисплея по вертикали, пикселей
+                            //Параметры w_offs и h_offs используются для нестандартных и "кривых" дисплеев, у которых начало координат физической матрицы дисплея и поля контроллера дисплея не совпадают, т.е. смещены. Для правильного дисплея эти параметры должны быть равны 0. Для "неправильного" определяются исходя из ситуации.
+                            int16_t w_offs,                   //Смещение по горизонтали матрицы дисплея в поле контроллера дисплея
+                            int16_t h_offs,                   //Смещение по вертикали матрицы дисплея в поле контроллера дисплея
+                            LCD_PageOrientation orientation,  //Ориентация: портретная или альбомная, обычная или зеркальная
+                            DisplayInitCallback init,         //Функция инициализации дисплея
+                            DisplaySetWindowCallback set_win, //Функция определения окна вывода дисплея
+                            DisplaySleepInCallback sleep_in,  //Функция включения режима сна дисплея
+                            DisplaySleepOutCallback sleep_out,//Функция выхода из режима сна дисплея
+                            void *connection_data,            //Данные подключения контроллера дисплея к МК
+                            LCD_DATA_BUS data_bus,            //Ширина кадра данных spi (8 или 16 бит)
+                            LCD_BackLight_data bkl_data);     //Данные для управления подсветкой дисплея
 ``` 
 2. Для статического выделения памяти:
 ```c
 LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,
-LCD_Handler *lcd,
-uint16_t resolution1,
-uint16_t resolution2,
-uint16_t width_controller,
-uint16_t height_controller,
-int16_t w_offs,
-int16_t h_offs,
-LCD_PageOrientation orientation,
-DisplayInitCallback init,
-DisplaySetWindowCallback set_win,
-DisplaySleepInCallback sleep_in,
-DisplaySleepOutCallback sleep_out,
-void *connection_data,
-LCD_DATA_BUS data_bus,
-LCD_BackLight_data bkl_data
-);
+                            LCD_Handler *lcd,                 //Указатель на объявленный пользователем обработчик дисплея
+                            uint16_t resolution1,
+                            uint16_t resolution2,
+                            uint16_t width_controller,
+                            uint16_t height_controller,
+                            int16_t w_offs,
+                            int16_t h_offs,
+                            LCD_PageOrientation orientation,
+                            DisplayInitCallback init,
+                            DisplaySetWindowCallback set_win,
+                            DisplaySleepInCallback sleep_in,
+                            DisplaySleepOutCallback sleep_out,
+                            void *connection_data,
+                            LCD_DATA_BUS data_bus,
+                            LCD_BackLight_data bkl_data);
 ``` 
 
 **Если есть проблемы, вызванные потерей связи с контроллером дисплея (зависания дисплея, "каша" и т.п.), то проверьте есть ли подтяжка к питанию (pull_up) линий sck и mosi.** Например, настройка gpio, используемых spi, в виде:
