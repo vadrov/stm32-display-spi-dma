@@ -169,5 +169,5 @@ typedef struct {
 **Рекомендую проводить пробное подключение дисплея на скорости около 10 Мбит/с.** Добившись стабильной  работы дисплея на этой скорости (многократный сброс не вызывает ошибок в работе, дисплей не подвисает, артефактов нет и т.п.), можно поэтапно повышать скорость (уменьшать делитель частоты spi, параметр Prescaler).\
 
 Автор: **VadRov**\
-Контакты: [Youtube](https://www.youtube.com/c/VadRov) [Дзен](https://zen.yandex.ru/vadrov) [VK](https://vk.com/vadrov) [Telegram](https://t.me/vadrov_channel)\
+Контакты: [Youtube](https://www.youtube.com/@VadRov) [Дзен](https://dzen.ru/vadrov) [VK](https://vk.com/vadrov) [Telegram](https://t.me/vadrov_channel)\
 Донат: [Поддержать автора](https://yoomoney.ru/to/4100117522443917)
