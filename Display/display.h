@@ -22,6 +22,12 @@
 #include "main.h"
 #include "fonts.h"
 
+/* ----------------------------- Скорость spi при чтении с дисплея -------------------------
+   от 0 (макс) до 7 (мин), где: 0 -> clk/2, 1 -> clk/4, ..., 7 -> clk/256
+   Применяется для процедур чтения информации с контроллера дисплея, например: LCD_ReadImage
+ -------------------------------------------------------------------------------------------*/
+#define SPI_SPEED_DISPLAY_READ	2
+
 /* -------------------------------------------------------------------------------------------------------------------
 						          Выбор механизма управления выделением памяти
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -247,6 +253,9 @@ void LCD_DrawCircle(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t r, uint32_
 void LCD_DrawFilledCircle(LCD_Handler* lcd, int16_t x0, int16_t y0, int16_t r, uint32_t color);
 //пересылает на дисплей блок памяти (например, кусок изображения)
 void LCD_DrawImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t *data, uint8_t dma_use_flag);
+//читает данные из окна дисплея с координатами левого верхнего угла (x, y), шириной w, высотой h в буфер data
+//формат буфера данных 16 бит (цвет R5G6B5)
+void LCD_ReadImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t *data);
 //выводит символ в указанной позиции
 void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *font, uint32_t txcolor, uint32_t bgcolor, LCD_PrintSymbolMode modesym);
 //выводит строку символов с указанной позиции

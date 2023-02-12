@@ -16,9 +16,11 @@
  *  https://t.me/vadrov_channel
  */
 
-#include "ili9341.h"
+#include "../Display/ili9341.h"
+
 #include "main.h"
-#include "display.h"
+
+#include "../Display/display.h"
 
 uint8_t ili9341_init_str[] = {
 			LCD_UPR_COMMAND, ILI9341_SOFTRESET, 0,

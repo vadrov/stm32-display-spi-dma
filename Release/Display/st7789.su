@@ -1,4 +1,4 @@
-../Display/st7789.c:78:10:ST7789_Init	0	static
-../Display/st7789.c:89:10:ST7789_SetWindow	4	static
-../Display/st7789.c:98:10:ST7789_SleepIn	0	static
-../Display/st7789.c:103:10:ST7789_SleepOut	0	static
+../Display/st7789.c:80:10:ST7789_Init	0	static
+../Display/st7789.c:91:10:ST7789_SetWindow	4	static
+../Display/st7789.c:100:10:ST7789_SleepIn	0	static
+../Display/st7789.c:105:10:ST7789_SleepOut	0	static

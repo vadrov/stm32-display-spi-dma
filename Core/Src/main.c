@@ -169,7 +169,8 @@ int main(void)
 						//Задаем смещение по ширине и высоте для нестандартных или бракованных дисплеев:
 						0,		//смещение по ширине дисплейной матрицы
 						0,		//смещение по высоте дисплейной матрицы
-						PAGE_ORIENTATION_PORTRAIT_MIRROR,
+						//PAGE_ORIENTATION_PORTRAIT_MIRROR,
+						PAGE_ORIENTATION_LANDSCAPE,
 						ILI9341_Init,
 						ILI9341_SetWindow,
 						ILI9341_SleepIn,

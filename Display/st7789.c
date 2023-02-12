@@ -16,9 +16,11 @@
  *  https://t.me/vadrov_channel
  */
 
-#include "st7789.h"
+#include "../Display/st7789.h"
+
 #include "main.h"
-#include "display.h"
+
+#include "../Display/display.h"
 
 uint8_t st7789_init_str[] = {
 			LCD_UPR_COMMAND, ST7789_SWRESET, 0,

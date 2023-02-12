@@ -1,4 +1,4 @@
-../Display/ili9341.c:85:10:ILI9341_Init	0	static
-../Display/ili9341.c:96:10:ILI9341_SetWindow	4	static
-../Display/ili9341.c:105:10:ILI9341_SleepIn	0	static
-../Display/ili9341.c:110:10:ILI9341_SleepOut	0	static
+../Display/ili9341.c:87:10:ILI9341_Init	0	static
+../Display/ili9341.c:98:10:ILI9341_SetWindow	4	static
+../Display/ili9341.c:107:10:ILI9341_SleepIn	0	static
+../Display/ili9341.c:112:10:ILI9341_SleepOut	0	static
