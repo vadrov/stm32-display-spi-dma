@@ -810,7 +810,7 @@ Disassembly of section .text:
  80009c6:	7848      	ldrb	r0, [r1, #1]
  80009c8:	0412      	lsls	r2, r2, #16
  80009ca:	61b2      	str	r2, [r6, #24]
- 80009cc:	60d8      	str	r0, [r3, #12]
+ 80009cc:	7318      	strb	r0, [r3, #12]
  80009ce:	689a      	ldr	r2, [r3, #8]
  80009d0:	0796      	lsls	r6, r2, #30
  80009d2:	d407      	bmi.n	80009e4 <LCD_String_Interpretator+0x84>
@@ -836,7 +836,7 @@ Disassembly of section .text:
  80009fe:	f810 2b01 	ldrb.w	r2, [r0], #1
  8000a02:	8fa1      	ldrh	r1, [r4, #60]	; 0x3c
  8000a04:	61b9      	str	r1, [r7, #24]
- 8000a06:	60da      	str	r2, [r3, #12]
+ 8000a06:	731a      	strb	r2, [r3, #12]
  8000a08:	689a      	ldr	r2, [r3, #8]
  8000a0a:	0797      	lsls	r7, r2, #30
  8000a0c:	d407      	bmi.n	8000a1e <LCD_String_Interpretator+0xbe>
@@ -867,7 +867,7 @@ Disassembly of section .text:
  8000a44:	f810 2b01 	ldrb.w	r2, [r0], #1
  8000a48:	8fa1      	ldrh	r1, [r4, #60]	; 0x3c
  8000a4a:	61b9      	str	r1, [r7, #24]
- 8000a4c:	60da      	str	r2, [r3, #12]
+ 8000a4c:	731a      	strb	r2, [r3, #12]
  8000a4e:	689a      	ldr	r2, [r3, #8]
  8000a50:	0797      	lsls	r7, r2, #30
  8000a52:	d407      	bmi.n	8000a64 <LCD_String_Interpretator+0x104>
@@ -928,7 +928,7 @@ Disassembly of section .text:
  8000aca:	6a63      	ldr	r3, [r4, #36]	; 0x24
  8000acc:	6819      	ldr	r1, [r3, #0]
  8000ace:	064e      	lsls	r6, r1, #25
- 8000ad0:	d43e      	bmi.n	8000b50 <LCD_DrawPixel.part.0+0xcc>
+ 8000ad0:	d43f      	bmi.n	8000b52 <LCD_DrawPixel.part.0+0xce>
  8000ad2:	f894 1641 	ldrb.w	r1, [r4, #1601]	; 0x641
  8000ad6:	b929      	cbnz	r1, 8000ae4 <LCD_DrawPixel.part.0+0x60>
  8000ad8:	6c25      	ldr	r5, [r4, #64]	; 0x40
@@ -945,12 +945,12 @@ Disassembly of section .text:
  8000af2:	2802      	cmp	r0, #2
  8000af4:	f421 412c 	bic.w	r1, r1, #44032	; 0xac00
  8000af8:	6019      	str	r1, [r3, #0]
- 8000afa:	d031      	beq.n	8000b60 <LCD_DrawPixel.part.0+0xdc>
+ 8000afa:	d032      	beq.n	8000b62 <LCD_DrawPixel.part.0+0xde>
  8000afc:	6818      	ldr	r0, [r3, #0]
  8000afe:	b2d1      	uxtb	r1, r2
  8000b00:	f040 0040 	orr.w	r0, r0, #64	; 0x40
  8000b04:	6018      	str	r0, [r3, #0]
- 8000b06:	60d9      	str	r1, [r3, #12]
+ 8000b06:	7319      	strb	r1, [r3, #12]
  8000b08:	6899      	ldr	r1, [r3, #8]
  8000b0a:	0789      	lsls	r1, r1, #30
  8000b0c:	d403      	bmi.n	8000b16 <LCD_DrawPixel.part.0+0x92>
@@ -958,55 +958,54 @@ Disassembly of section .text:
  8000b10:	6899      	ldr	r1, [r3, #8]
  8000b12:	0789      	lsls	r1, r1, #30
  8000b14:	d5fb      	bpl.n	8000b0e <LCD_DrawPixel.part.0+0x8a>
- 8000b16:	0a12      	lsrs	r2, r2, #8
- 8000b18:	60da      	str	r2, [r3, #12]
- 8000b1a:	689a      	ldr	r2, [r3, #8]
- 8000b1c:	0792      	lsls	r2, r2, #30
- 8000b1e:	d407      	bmi.n	8000b30 <LCD_DrawPixel.part.0+0xac>
- 8000b20:	bf00      	nop
- 8000b22:	689a      	ldr	r2, [r3, #8]
- 8000b24:	0796      	lsls	r6, r2, #30
- 8000b26:	d5fb      	bpl.n	8000b20 <LCD_DrawPixel.part.0+0x9c>
- 8000b28:	689a      	ldr	r2, [r3, #8]
- 8000b2a:	0610      	lsls	r0, r2, #24
- 8000b2c:	d503      	bpl.n	8000b36 <LCD_DrawPixel.part.0+0xb2>
- 8000b2e:	bf00      	nop
- 8000b30:	689a      	ldr	r2, [r3, #8]
- 8000b32:	0610      	lsls	r0, r2, #24
- 8000b34:	d4fb      	bmi.n	8000b2e <LCD_DrawPixel.part.0+0xaa>
- 8000b36:	f894 2641 	ldrb.w	r2, [r4, #1601]	; 0x641
- 8000b3a:	b922      	cbnz	r2, 8000b46 <LCD_DrawPixel.part.0+0xc2>
- 8000b3c:	6c22      	ldr	r2, [r4, #64]	; 0x40
- 8000b3e:	b112      	cbz	r2, 8000b46 <LCD_DrawPixel.part.0+0xc2>
- 8000b40:	f8b4 1044 	ldrh.w	r1, [r4, #68]	; 0x44
- 8000b44:	6191      	str	r1, [r2, #24]
- 8000b46:	681a      	ldr	r2, [r3, #0]
- 8000b48:	f022 0240 	bic.w	r2, r2, #64	; 0x40
- 8000b4c:	601a      	str	r2, [r3, #0]
- 8000b4e:	bd70      	pop	{r4, r5, r6, pc}
- 8000b50:	bf00      	nop
- 8000b52:	6a61      	ldr	r1, [r4, #36]	; 0x24
- 8000b54:	6809      	ldr	r1, [r1, #0]
- 8000b56:	064d      	lsls	r5, r1, #25
- 8000b58:	d4fa      	bmi.n	8000b50 <LCD_DrawPixel.part.0+0xcc>
- 8000b5a:	f894 0048 	ldrb.w	r0, [r4, #72]	; 0x48
- 8000b5e:	e7b8      	b.n	8000ad2 <LCD_DrawPixel.part.0+0x4e>
- 8000b60:	6819      	ldr	r1, [r3, #0]
- 8000b62:	f441 6100 	orr.w	r1, r1, #2048	; 0x800
- 8000b66:	6019      	str	r1, [r3, #0]
- 8000b68:	6819      	ldr	r1, [r3, #0]
- 8000b6a:	f041 0140 	orr.w	r1, r1, #64	; 0x40
- 8000b6e:	6019      	str	r1, [r3, #0]
- 8000b70:	60da      	str	r2, [r3, #12]
- 8000b72:	689a      	ldr	r2, [r3, #8]
- 8000b74:	0790      	lsls	r0, r2, #30
- 8000b76:	d4db      	bmi.n	8000b30 <LCD_DrawPixel.part.0+0xac>
- 8000b78:	bf00      	nop
- 8000b7a:	689a      	ldr	r2, [r3, #8]
- 8000b7c:	0795      	lsls	r5, r2, #30
- 8000b7e:	d5fb      	bpl.n	8000b78 <LCD_DrawPixel.part.0+0xf4>
- 8000b80:	e7d6      	b.n	8000b30 <LCD_DrawPixel.part.0+0xac>
- 8000b82:	bf00      	nop
+ 8000b16:	f3c2 2207 	ubfx	r2, r2, #8, #8
+ 8000b1a:	731a      	strb	r2, [r3, #12]
+ 8000b1c:	689a      	ldr	r2, [r3, #8]
+ 8000b1e:	0792      	lsls	r2, r2, #30
+ 8000b20:	d407      	bmi.n	8000b32 <LCD_DrawPixel.part.0+0xae>
+ 8000b22:	bf00      	nop
+ 8000b24:	689a      	ldr	r2, [r3, #8]
+ 8000b26:	0796      	lsls	r6, r2, #30
+ 8000b28:	d5fb      	bpl.n	8000b22 <LCD_DrawPixel.part.0+0x9e>
+ 8000b2a:	689a      	ldr	r2, [r3, #8]
+ 8000b2c:	0610      	lsls	r0, r2, #24
+ 8000b2e:	d503      	bpl.n	8000b38 <LCD_DrawPixel.part.0+0xb4>
+ 8000b30:	bf00      	nop
+ 8000b32:	689a      	ldr	r2, [r3, #8]
+ 8000b34:	0610      	lsls	r0, r2, #24
+ 8000b36:	d4fb      	bmi.n	8000b30 <LCD_DrawPixel.part.0+0xac>
+ 8000b38:	f894 2641 	ldrb.w	r2, [r4, #1601]	; 0x641
+ 8000b3c:	b922      	cbnz	r2, 8000b48 <LCD_DrawPixel.part.0+0xc4>
+ 8000b3e:	6c22      	ldr	r2, [r4, #64]	; 0x40
+ 8000b40:	b112      	cbz	r2, 8000b48 <LCD_DrawPixel.part.0+0xc4>
+ 8000b42:	f8b4 1044 	ldrh.w	r1, [r4, #68]	; 0x44
+ 8000b46:	6191      	str	r1, [r2, #24]
+ 8000b48:	681a      	ldr	r2, [r3, #0]
+ 8000b4a:	f022 0240 	bic.w	r2, r2, #64	; 0x40
+ 8000b4e:	601a      	str	r2, [r3, #0]
+ 8000b50:	bd70      	pop	{r4, r5, r6, pc}
+ 8000b52:	bf00      	nop
+ 8000b54:	6a61      	ldr	r1, [r4, #36]	; 0x24
+ 8000b56:	6809      	ldr	r1, [r1, #0]
+ 8000b58:	064d      	lsls	r5, r1, #25
+ 8000b5a:	d4fa      	bmi.n	8000b52 <LCD_DrawPixel.part.0+0xce>
+ 8000b5c:	f894 0048 	ldrb.w	r0, [r4, #72]	; 0x48
+ 8000b60:	e7b7      	b.n	8000ad2 <LCD_DrawPixel.part.0+0x4e>
+ 8000b62:	6819      	ldr	r1, [r3, #0]
+ 8000b64:	f441 6100 	orr.w	r1, r1, #2048	; 0x800
+ 8000b68:	6019      	str	r1, [r3, #0]
+ 8000b6a:	6819      	ldr	r1, [r3, #0]
+ 8000b6c:	f041 0140 	orr.w	r1, r1, #64	; 0x40
+ 8000b70:	6019      	str	r1, [r3, #0]
+ 8000b72:	819a      	strh	r2, [r3, #12]
+ 8000b74:	689a      	ldr	r2, [r3, #8]
+ 8000b76:	0790      	lsls	r0, r2, #30
+ 8000b78:	d4db      	bmi.n	8000b32 <LCD_DrawPixel.part.0+0xae>
+ 8000b7a:	bf00      	nop
+ 8000b7c:	689a      	ldr	r2, [r3, #8]
+ 8000b7e:	0795      	lsls	r5, r2, #30
+ 8000b80:	d5fb      	bpl.n	8000b7a <LCD_DrawPixel.part.0+0xf6>
+ 8000b82:	e7d6      	b.n	8000b32 <LCD_DrawPixel.part.0+0xae>
  8000b84:	fffff800 	.word	0xfffff800
 
 08000b88 <LCD_DisplayAdd>:
@@ -1414,7 +1413,7 @@ Disassembly of section .text:
  8000f96:	b2c8      	uxtb	r0, r1
  8000f98:	0a09      	lsrs	r1, r1, #8
  8000f9a:	b1ad      	cbz	r5, 8000fc8 <LCD_FillWindow+0x198>
- 8000f9c:	60d8      	str	r0, [r3, #12]
+ 8000f9c:	7318      	strb	r0, [r3, #12]
  8000f9e:	689a      	ldr	r2, [r3, #8]
  8000fa0:	0796      	lsls	r6, r2, #30
  8000fa2:	d403      	bmi.n	8000fac <LCD_FillWindow+0x17c>
@@ -1422,7 +1421,7 @@ Disassembly of section .text:
  8000fa6:	689a      	ldr	r2, [r3, #8]
  8000fa8:	0797      	lsls	r7, r2, #30
  8000faa:	d5fb      	bpl.n	8000fa4 <LCD_FillWindow+0x174>
- 8000fac:	60d9      	str	r1, [r3, #12]
+ 8000fac:	7319      	strb	r1, [r3, #12]
  8000fae:	689a      	ldr	r2, [r3, #8]
  8000fb0:	0792      	lsls	r2, r2, #30
  8000fb2:	d403      	bmi.n	8000fbc <LCD_FillWindow+0x18c>
@@ -1430,7 +1429,7 @@ Disassembly of section .text:
  8000fb6:	689a      	ldr	r2, [r3, #8]
  8000fb8:	0796      	lsls	r6, r2, #30
  8000fba:	d5fb      	bpl.n	8000fb4 <LCD_FillWindow+0x184>
- 8000fbc:	3d01      	subs	r5, #1
+ 8000fbc:	3d02      	subs	r5, #2
  8000fbe:	d1ed      	bne.n	8000f9c <LCD_FillWindow+0x16c>
  8000fc0:	689a      	ldr	r2, [r3, #8]
  8000fc2:	0612      	lsls	r2, r2, #24
@@ -1472,7 +1471,7 @@ Disassembly of section .text:
  800101e:	e7ac      	b.n	8000f7a <LCD_FillWindow+0x14a>
  8001020:	2d00      	cmp	r5, #0
  8001022:	d0d1      	beq.n	8000fc8 <LCD_FillWindow+0x198>
- 8001024:	60d9      	str	r1, [r3, #12]
+ 8001024:	8199      	strh	r1, [r3, #12]
  8001026:	689a      	ldr	r2, [r3, #8]
  8001028:	0792      	lsls	r2, r2, #30
  800102a:	d403      	bmi.n	8001034 <LCD_FillWindow+0x204>
@@ -1686,9 +1685,9 @@ Disassembly of section .text:
  8001242:	f04f 0c00 	mov.w	ip, #0
  8001246:	d027      	beq.n	8001298 <LCD_WriteChar+0x230>
  8001248:	2f02      	cmp	r7, #2
- 800124a:	d062      	beq.n	8001312 <LCD_WriteChar+0x2aa>
+ 800124a:	d063      	beq.n	8001314 <LCD_WriteChar+0x2ac>
  800124c:	2f03      	cmp	r7, #3
- 800124e:	d063      	beq.n	8001318 <LCD_WriteChar+0x2b0>
+ 800124e:	d064      	beq.n	800131a <LCD_WriteChar+0x2b2>
  8001250:	f8db 0000 	ldr.w	r0, [fp]
  8001254:	44bb      	add	fp, r7
  8001256:	b31b      	cbz	r3, 80012a0 <LCD_WriteChar+0x238>
@@ -1708,7 +1707,7 @@ Disassembly of section .text:
  8001274:	f896 3048 	ldrb.w	r3, [r6, #72]	; 0x48
  8001278:	2b02      	cmp	r3, #2
  800127a:	d13e      	bne.n	80012fa <LCD_WriteChar+0x292>
- 800127c:	60e1      	str	r1, [r4, #12]
+ 800127c:	81a1      	strh	r1, [r4, #12]
  800127e:	f898 3000 	ldrb.w	r3, [r8]
  8001282:	3201      	adds	r2, #1
  8001284:	4293      	cmp	r3, r2
@@ -1756,26 +1755,26 @@ Disassembly of section .text:
  80012f6:	6023      	str	r3, [r4, #0]
  80012f8:	e798      	b.n	800122c <LCD_WriteChar+0x1c4>
  80012fa:	b2cb      	uxtb	r3, r1
- 80012fc:	60e3      	str	r3, [r4, #12]
+ 80012fc:	7323      	strb	r3, [r4, #12]
  80012fe:	68a3      	ldr	r3, [r4, #8]
  8001300:	079b      	lsls	r3, r3, #30
- 8001302:	f3c1 210f 	ubfx	r1, r1, #8, #16
- 8001306:	d4b9      	bmi.n	800127c <LCD_WriteChar+0x214>
+ 8001302:	f3c1 2107 	ubfx	r1, r1, #8, #8
+ 8001306:	d403      	bmi.n	8001310 <LCD_WriteChar+0x2a8>
  8001308:	bf00      	nop
  800130a:	68a3      	ldr	r3, [r4, #8]
  800130c:	079b      	lsls	r3, r3, #30
  800130e:	d5fb      	bpl.n	8001308 <LCD_WriteChar+0x2a0>
- 8001310:	e7b4      	b.n	800127c <LCD_WriteChar+0x214>
- 8001312:	f8bb 0000 	ldrh.w	r0, [fp]
- 8001316:	e79d      	b.n	8001254 <LCD_WriteChar+0x1ec>
- 8001318:	f89b 0002 	ldrb.w	r0, [fp, #2]
- 800131c:	f89b 2001 	ldrb.w	r2, [fp, #1]
- 8001320:	0400      	lsls	r0, r0, #16
- 8001322:	ea40 2002 	orr.w	r0, r0, r2, lsl #8
- 8001326:	f89b 2000 	ldrb.w	r2, [fp]
- 800132a:	4310      	orrs	r0, r2
- 800132c:	e792      	b.n	8001254 <LCD_WriteChar+0x1ec>
- 800132e:	bf00      	nop
+ 8001310:	7321      	strb	r1, [r4, #12]
+ 8001312:	e7b4      	b.n	800127e <LCD_WriteChar+0x216>
+ 8001314:	f8bb 0000 	ldrh.w	r0, [fp]
+ 8001318:	e79c      	b.n	8001254 <LCD_WriteChar+0x1ec>
+ 800131a:	f89b 0002 	ldrb.w	r0, [fp, #2]
+ 800131e:	f89b 2001 	ldrb.w	r2, [fp, #1]
+ 8001322:	0400      	lsls	r0, r0, #16
+ 8001324:	ea40 2002 	orr.w	r0, r0, r2, lsl #8
+ 8001328:	f89b 2000 	ldrb.w	r2, [fp]
+ 800132c:	4310      	orrs	r0, r2
+ 800132e:	e791      	b.n	8001254 <LCD_WriteChar+0x1ec>
  8001330:	fffff800 	.word	0xfffff800
 
 08001334 <LCD_WriteString>:

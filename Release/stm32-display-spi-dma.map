@@ -96,8 +96,6 @@ Discarded input sections
                 0x0000000000000000        0xc ./Display/display.o
  .text.LCD_HardWareReset
                 0x0000000000000000       0x28 ./Display/display.o
- .text.LCD_ReadImage
-                0x0000000000000000      0x1d8 ./Display/display.o
  .text.LCD_Delete
                 0x0000000000000000       0x10 ./Display/display.o
  .text.LCD_GetBackLight
@@ -117,7 +115,7 @@ Discarded input sections
  .text.LCD_SetActiveWindow
                 0x0000000000000000       0x30 ./Display/display.o
  .text.LCD_WriteData
-                0x0000000000000000       0xc4 ./Display/display.o
+                0x0000000000000000       0xcc ./Display/display.o
  .text.LCD_WriteDataDMA
                 0x0000000000000000      0x11c ./Display/display.o
  .text.LCD_DrawPixel
@@ -138,6 +136,10 @@ Discarded input sections
                 0x0000000000000000       0xfc ./Display/display.o
  .text.LCD_DrawImage
                 0x0000000000000000       0x7c ./Display/display.o
+ .text.LCD_ReadImage
+                0x0000000000000000      0x1f0 ./Display/display.o
+ .text.LCD_ScrollWindow
+                0x0000000000000000      0x23c ./Display/display.o
  .text.LCD_Color
                 0x0000000000000000       0x30 ./Display/display.o
  .text.LCD_Color_24b_to_16b
