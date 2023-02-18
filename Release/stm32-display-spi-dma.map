@@ -138,8 +138,6 @@ Discarded input sections
                 0x0000000000000000       0x7c ./Display/display.o
  .text.LCD_ReadImage
                 0x0000000000000000      0x1f0 ./Display/display.o
- .text.LCD_ScrollWindow
-                0x0000000000000000      0x23c ./Display/display.o
  .text.LCD_Color
                 0x0000000000000000       0x30 ./Display/display.o
  .text.LCD_Color_24b_to_16b

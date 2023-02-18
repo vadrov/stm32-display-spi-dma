@@ -182,14 +182,6 @@ typedef struct {
 	void *next;					//указатель на следующий дисплей
 } LCD_Handler;
 
-//Типы сдвига изображения в окне
-typedef enum {
-	LCD_SCROLL_LEFT = 0, //сдвиг влево
-	LCD_SCROLL_RIGHT,	 //сдвиг вправо
-	LCD_SCROLL_UP,		 //сдвиг вверх
-	LCD_SCROLL_DOWN		 //сдвиг вниз
-} LCD_SCROLL_TYPE;
-
 extern LCD_Handler *LCD;		//указатель на список дисплеев (первый дисплей в списке)
 
 //коллбэк (внести в обработчик прерывания потока DMA, выделенного для дисплея, см. файл stm32f4xx_it.c)
@@ -277,12 +269,6 @@ void LCD_DrawImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_
 //читает данные из окна дисплея с координатами левого верхнего угла (x, y), шириной w, высотой h в буфер data
 //формат буфера данных 16 бит (цвет R5G6B5)
 void LCD_ReadImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t *data);
-//Сдвиг на 1 пиксель содержимого окна дисплея с координатами левого верхнего угла (x, y), шириной w, высотой h
-//в направлении, определенном переменной scroll_type типа LCD_SCROLL_TYPE (влево, вправо, вверх, вниз).
-//cyclic определяет циклический сдвиг, когда первый (последний) столбец/строка переносится в последний (первый)
-//столбец/строку в зависимости от направления сдвига.
-//При cyclic != 0 производится циклический сдвиг, при 0 простой.
-void LCD_ScrollWindow(LCD_Handler *lcd, uint16_t x, uint16_t y, uint16_t w, uint16_t h, LCD_SCROLL_TYPE scroll_type, uint8_t cyclic);
 //выводит символ в указанной позиции
 void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *font, uint32_t txcolor, uint32_t bgcolor, LCD_PrintSymbolMode modesym);
 //выводит строку символов с указанной позиции

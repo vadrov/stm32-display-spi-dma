@@ -31,8 +31,7 @@
 ../Display/display.c:879:6:LCD_DrawFilledCircle	72	static
 ../Display/display.c:914:6:LCD_DrawImage	32	static
 ../Display/display.c:944:6:LCD_ReadImage	88	static,ignoring_inline_asm
-../Display/display.c:1069:6:LCD_ScrollWindow	96	dynamic
-../Display/display.c:1154:6:LCD_WriteChar	56	static,ignoring_inline_asm
-../Display/display.c:1230:6:LCD_WriteString	56	static
-../Display/display.c:1248:17:LCD_Color	4	static
-../Display/display.c:1257:17:LCD_Color_24b_to_16b	0	static
+../Display/display.c:1072:6:LCD_WriteChar	56	static,ignoring_inline_asm
+../Display/display.c:1148:6:LCD_WriteString	56	static
+../Display/display.c:1166:17:LCD_Color	4	static
+../Display/display.c:1175:17:LCD_Color_24b_to_16b	0	static
