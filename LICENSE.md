@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 vadrov
+Copyright (c) 2019-2022 VadRov / www.youtube.com/@VadRov / www.dzen.ru/vadrov
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
