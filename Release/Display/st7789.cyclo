@@ -1,0 +1,4 @@
+../Display/st7789.c:80:10:ST7789_Init	2
+../Display/st7789.c:91:10:ST7789_SetWindow	1
+../Display/st7789.c:100:10:ST7789_SleepIn	1
+../Display/st7789.c:105:10:ST7789_SleepOut	1

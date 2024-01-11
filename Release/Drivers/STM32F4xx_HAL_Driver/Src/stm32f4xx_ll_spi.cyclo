@@ -1,0 +1,8 @@
+../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_spi.c:122:13:LL_SPI_DeInit	5
+../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_spi.c:213:13:LL_SPI_Init	3
+../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_spi.c:281:6:LL_SPI_StructInit	1
+../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_spi.c:384:13:LL_I2S_DeInit	5
+../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_spi.c:399:13:LL_I2S_Init	5
+../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_spi.c:506:6:LL_I2S_StructInit	1
+../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_spi.c:528:6:LL_I2S_ConfigPrescaler	1
+../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_spi.c:554:14:LL_I2S_InitFullDuplex	3

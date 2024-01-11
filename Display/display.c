@@ -72,7 +72,7 @@ void Display_TC_Callback(DMA_TypeDef *dma_x, uint32_t stream)
 			DMA_Stream_TypeDef *dma_TX = ((DMA_Stream_TypeDef *)((uint32_t)((uint32_t)dma_x + STREAM_OFFSET_TAB[stream])));
 			//выключаем поток DMA
 			dma_TX->CR &= ~DMA_SxCR_EN;
-			while (dma_TX->CR & DMA_SxCR_EN) { __NOP(); } //ждем отключения потока
+			while (dma_TX->CR & DMA_SxCR_EN) ; //ждем отключения потока
 			if (lcd->size_mem) { //если переданы не все данные из памяти, то перезапускаем DMA и выходим из прерывания
 				if (lcd->size_mem > 65535) {
 					dma_TX->NDTR = 65535;
@@ -99,7 +99,7 @@ void Display_TC_Callback(DMA_TypeDef *dma_x, uint32_t stream)
 #endif
 			//запрещаем SPI отправлять запросы к DMA
 			lcd->spi_data.spi->CR2 &= ~SPI_CR2_TXDMAEN;
-			while (lcd->spi_data.spi->SR & SPI_SR_BSY) { __NOP(); } //ждем пока SPI освободится
+			while (lcd->spi_data.spi->SR & SPI_SR_BSY) ; //ждем пока SPI освободится
 			//отключаем дисплей от MK (притягиваем вывод CS дисплея к высокому уровню)
 			if (!lcd->cs_control) { LCD_CS_HI }
 			//выключаем spi
@@ -146,8 +146,8 @@ inline static void LCD_WRITE_DC(LCD_Handler* lcd, uint8_t data, lcd_dc_select lc
 		LCD_DC_HI
 	}
 	LL_SPI_TransmitData8(spi, data);
-	while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
-	while (spi->SR & SPI_SR_BSY)    { __NOP(); } //ждем когда SPI освободится
+	while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
+	while (spi->SR & SPI_SR_BSY)    ; //ждем когда SPI освободится
 }
 
 void LCD_HardWareReset (LCD_Handler* lcd)
@@ -165,7 +165,7 @@ void LCD_String_Interpretator(LCD_Handler* lcd, uint8_t *str)
 {
 	SPI_TypeDef *spi = lcd->spi_data.spi;
 	int i;
-	while (LCD_GetState(lcd) == LCD_STATE_BUSY) { __NOP(); } //ждем когда дисплей освободится
+	while (LCD_GetState(lcd) == LCD_STATE_BUSY) ; //ждем когда дисплей освободится
 	if (!lcd->cs_control) { LCD_CS_LOW }
 	spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
 				   SPI_CR1_RXONLY |   	//  Transmit only
@@ -248,7 +248,7 @@ LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,     /* указатель на с
 	if (hdma->dma) {
 		DMA_Stream_TypeDef *dma_x = ((DMA_Stream_TypeDef *)((uint32_t)((uint32_t)hdma->dma + STREAM_OFFSET_TAB[hdma->stream])));
 		dma_x->CR &= ~DMA_SxCR_EN; //отключаем канал DMA
-		while(dma_x->CR & DMA_SxCR_EN) { __NOP(); } //ждем отключения канала
+		while(dma_x->CR & DMA_SxCR_EN) ; //ждем отключения канала
 		if (lcd->data_bus == LCD_DATA_8BIT_BUS) {
 			dma_x->CR &= ~(DMA_SxCR_MSIZE | DMA_SxCR_PSIZE);
 			dma_x->CR |= LL_DMA_MDATAALIGN_BYTE | LL_DMA_PDATAALIGN_BYTE;
@@ -317,9 +317,7 @@ LCD_Handler* LCD_DisplayAdd(LCD_Handler *lcds,     /* указатель на с
 	lcd->display_number = 0;
 	lcd->next = 0;
 	lcd->prev = 0;
-#ifndef LCD_DYNAMIC_MEM
-	lcd->tmp_buf = lcd->display_work_buffer;
-#endif
+	lcd->tmp_buf = 0;
 	if (!lcds) {
 		return lcd;
 	}
@@ -484,7 +482,7 @@ void LCD_SetActiveWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2
 void LCD_WriteData(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 {
 	SPI_TypeDef *spi = lcd->spi_data.spi;
-	while (LCD_GetState(lcd) == LCD_STATE_BUSY) { __NOP(); } //ждем когда дисплей освободится
+	while (LCD_GetState(lcd) == LCD_STATE_BUSY) ; //ждем когда дисплей освободится
 	if (!lcd->cs_control) { LCD_CS_LOW }
 	if (!lcd->dc_control) { LCD_DC_HI  }
 	spi->CR1 &= ~ (SPI_CR1_BIDIMODE |  	//здесь задаем режим
@@ -498,7 +496,7 @@ void LCD_WriteData(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 	if (lcd->data_bus == LCD_DATA_16BIT_BUS) {
 		while (len--) {
 			LL_SPI_TransmitData16(spi, *data++); //записываем данные в регистр
-			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
 		}
 	}
 	else {
@@ -506,10 +504,10 @@ void LCD_WriteData(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 		uint8_t *data1 = (uint8_t*)data;
 		while (len--)	{
 			LL_SPI_TransmitData8(spi, *data1++); //записываем данные в регистр
-			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
 		}
 	}
-	while (spi->SR & SPI_SR_BSY) { __NOP(); } //ждем когда SPI освободится
+	while (spi->SR & SPI_SR_BSY) ; //ждем когда SPI освободится
 	if (!lcd->cs_control) { LCD_CS_HI }
 	//выключаем spi
 	spi->CR1 &= ~SPI_CR1_SPE;
@@ -523,7 +521,7 @@ void LCD_WriteDataDMA(LCD_Handler *lcd, uint16_t *data, uint32_t len)
 			len *= 2;
 		}
 		SPI_TypeDef *spi = lcd->spi_data.spi;
-		while (LCD_GetState(lcd) == LCD_STATE_BUSY) { __NOP(); } //ждем когда дисплей освободится
+		while (LCD_GetState(lcd) == LCD_STATE_BUSY) ; //ждем когда дисплей освободится
 		if (!lcd->cs_control) { LCD_CS_LOW }
 		if (!lcd->dc_control) { LCD_DC_HI  }
 		lcd->size_mem = len;
@@ -618,20 +616,20 @@ void LCD_FillWindow(LCD_Handler* lcd, uint16_t x1, uint16_t y1, uint16_t x2, uin
 	if (lcd->data_bus == LCD_DATA_16BIT_BUS) {
 		while(len--) {
 			LL_SPI_TransmitData16(spi, color16); //записываем данные в регистр
-			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
 		}
 	}
 	else {
 		uint8_t color1 = color16 & 0xFF, color2 = color16 >> 8;
 		while(len--) {
 			LL_SPI_TransmitData8(spi, color1);
-			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
 			LL_SPI_TransmitData8(spi, color2);
-			while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+			while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
 			len--;
 		}
 	}
-	while (spi->SR & SPI_SR_BSY) { __NOP(); } //ждем когда SPI освободится
+	while (spi->SR & SPI_SR_BSY) ; //ждем когда SPI освободится
 	if (!lcd->cs_control) LCD_CS_HI
 	//выключаем spi
 	spi->CR1 &= ~SPI_CR1_SPE;
@@ -970,7 +968,7 @@ void LCD_ReadImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_
 	set_win_and_read[14] = y >> 8;  set_win_and_read[15] = y & 0xFF;
 	set_win_and_read[16] = y1 >> 8; set_win_and_read[17] = y1 & 0xFF;
 	//Ждем, когда дисплей освободится и будет готов к приему новых команд и данных
-	while (LCD_GetState(lcd) != LCD_STATE_READY) { __NOP(); }
+	while (LCD_GetState(lcd) != LCD_STATE_READY) ;
 	lcd->cs_control = 1; //Отключаем управление линией CS со стороны интерпретатора управляющих строк
 	SPI_TypeDef *spi = lcd->spi_data.spi;
 	uint32_t spi_param = spi->CR1; //Запоминаем параметры spi
@@ -1013,7 +1011,7 @@ void LCD_ReadImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_
 #if (SPI_HALF_DUPLEX_READ == 0) //В полудуплексе при приеме заливать данные в DR для старта тактирования не надо
 		LL_SPI_TransmitData8(spi, 0x00); //NOP
 #endif
-		while (!(spi->SR & SPI_SR_RXNE)) { __NOP(); } //Ожидаем прием ответа от контроллера дисплея
+		while (!(spi->SR & SPI_SR_RXNE)) ; //Ожидаем прием ответа от контроллера дисплея
 		r = LL_SPI_ReceiveData8(spi);
 	}
 	//------------------------------ Читаем данные о цвете len пикселей --------------------------
@@ -1025,17 +1023,17 @@ void LCD_ReadImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_
 #if (SPI_HALF_DUPLEX_READ == 0)
 		LL_SPI_TransmitData8(spi, 0x00); //NOP
 #endif
-		while (!(spi->SR & SPI_SR_RXNE)) { __NOP(); }//Ожидаем прием ответа от контроллера дисплея
+		while (!(spi->SR & SPI_SR_RXNE)) ;//Ожидаем прием ответа от контроллера дисплея
 		r = LL_SPI_ReceiveData8(spi);
 #if (SPI_HALF_DUPLEX_READ == 0)
 		LL_SPI_TransmitData8(spi, 0x00); //NOP
 #endif
-		while (!(spi->SR & SPI_SR_RXNE)) { __NOP(); }
+		while (!(spi->SR & SPI_SR_RXNE)) ;
 		g = LL_SPI_ReceiveData8(spi);
 #if (SPI_HALF_DUPLEX_READ == 0)
 		LL_SPI_TransmitData8(spi, 0x00); //NOP
 #endif
-		while (!(spi->SR & SPI_SR_RXNE)) { __NOP(); }
+		while (!(spi->SR & SPI_SR_RXNE)) ;
 		b = LL_SPI_ReceiveData8(spi);
 		*data_ptr++ = LCD_Color(lcd, r, g, b); //Преобразуем цвет из R8G8B8 в R5G6B5 и запоминаем его
 	}
@@ -1044,14 +1042,14 @@ void LCD_ReadImage(LCD_Handler* lcd, uint16_t x, uint16_t y, uint16_t w, uint16_
 	  	  	  //переключения направления линии SDA на прием информации от MCU. Так что, без
 	  	  	  //линии CS на дисплее НЕ ОБОЙТИСЬ.
 #if (SPI_HALF_DUPLEX_READ == 0)
-	while (spi->SR & SPI_SR_BSY) { __NOP(); } //Ждем когда spi освободится
+	while (spi->SR & SPI_SR_BSY) ; //Ждем когда spi освободится
 											  //А в полудуплексе ждать не надо (см. спецификацию MCU),
 											  //но надо дочитывать...
 #endif
 	spi->CR1 &= ~SPI_CR1_SPE; //spi выключаем
 #if (SPI_HALF_DUPLEX_READ == 1)
 	//Обязательное дочитывание после выключения spi для полудуплексного режима, иначе будет "не гуд"
-	while (!(spi->SR & SPI_SR_RXNE)) { __NOP(); }
+	while (!(spi->SR & SPI_SR_RXNE)) ;
 #endif
 	spi->CR1 = spi_param; //Восстанавливаем параметры spi
 	//Восстанавливаем 16-битный режим цвета
@@ -1107,20 +1105,20 @@ void LCD_WriteChar(LCD_Handler* lcd, uint16_t x, uint16_t y, char ch, FontDef *f
 			for (j = 0; j < font->width; j++)
 			{
 				color = (tmp << j) & k ? txcolor16: bgcolor16;
-				while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+				while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
 				if (lcd->data_bus == LCD_DATA_16BIT_BUS) {
 					LL_SPI_TransmitData16(spi, color);
 				}
 				else {
 					uint8_t color1 = color & 0xFF, color2 = color >> 8;
 					LL_SPI_TransmitData8(spi, color1);
-					while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
+					while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
 					LL_SPI_TransmitData8(spi, color2);
 				}
 			}
 		}
-		while (!(spi->SR & SPI_SR_TXE)) { __NOP(); } //ждем окончания передачи
-		while (spi->SR & SPI_SR_BSY) { __NOP(); } //ждем когда SPI освободится
+		while (!(spi->SR & SPI_SR_TXE)) ; //ждем окончания передачи
+		while (spi->SR & SPI_SR_BSY) ; //ждем когда SPI освободится
 		//выключаем spi
 		spi->CR1 &= ~SPI_CR1_SPE;
 		LCD_CS_HI
