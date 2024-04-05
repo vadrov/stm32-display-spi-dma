@@ -116,7 +116,7 @@ typedef struct {
 	uint16_t reset_pin;             //пин вывода RESET
 	GPIO_TypeDef *dc_port;          //порт вывода DC
 	uint16_t dc_pin;                //пин вывода DC
-	GPIO_TypeDef *cs_port;          //пин вывода CS
+	GPIO_TypeDef *cs_port;          //порт вывода CS
 	uint16_t cs_pin;                //пин вывода CS
 } LCD_SPI_Connected_data;
 ```
