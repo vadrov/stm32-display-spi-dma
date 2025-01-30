@@ -1,6 +1,6 @@
 Copyright (C)2019-2022 VadRov / www.youtube.com/@VadRov / www.dzen.ru/vadrov
  
-# Library for controlling displays via SPI with DMA. Release 1.4
+# Library for SPI displays. Release 1.4 (CMSIS, LL, DMA)
 Control of a display (displays) connected with an SPI interface to a microcontroller of the STM32F4 family with DMA support, smooth change of backlight brightness via PWM. Displays with and without CS output are supported. Memory allocation control mechanism can be selected: static or dynamic (see display.h file).
 
 The library (Display folder) contains low-level drivers for displays with ST7789 and ILI9341 controllers. To connect a display via SPI with another controller, you need to write your own low-level driver with initialization strings, etc., following the example of these drivers, referring to the specification of the corresponding display controller.
