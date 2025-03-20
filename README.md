@@ -18,7 +18,7 @@ Upd.: Note on the video (there is an old release of the library). The new releas
 This list is declared in the library by the global variable LCD. After the first call to this function, you must reassign this (LCD) variable.
 1. For the option with dynamic memory allocation:
 ```c
-LCD = LCD_DisplayAdd (LCD, параметры дисплея...);
+LCD = LCD_DisplayAdd (LCD, display parameters...);
 ```
 2. For the static memory allocation option:
 ```c
